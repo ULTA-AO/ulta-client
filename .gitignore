@@ -1,0 +1,35 @@
+# Editor and OS files
+*~
+*.user
+*.autosave
+.DS_Store
+.idea/
+.vscode/
+
+# Build output
+build/
+build-*/
+release/
+debug/
+bin/*
+*.o
+*.obj
+moc_*
+ui_*.h
+qrc_*.cpp
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# Proprietary audio library (BASS), download it from un4seen.com
+bass*.h
+
+# Local settings, logs and a player's own base folder
+ulta.ini
+*.log
+logs/
+*.db
+/base/

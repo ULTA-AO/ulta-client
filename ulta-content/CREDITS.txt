@@ -1,0 +1,31 @@
+ULTA AO2 - credits for bundled content
+======================================
+
+ULTA logo and title art
+-----------------------
+The ULTA logo and title art in the lobby was created by Marilith Cribaum
+(Discord: marilithcribaum01).
+
+Effects pack
+------------
+"Zutra's Vanilla Effects Pack v2 (CC Edition)"
+Made by Zutra  -  Discord: _threedott
+Bundled with ULTA AO2 with the author's permission. It provides the built-in
+effects (the effects list, images, icons and a few sounds) found in the
+"ulta/base" folder. Content in a player's own base folder always takes
+priority over these built-in files.
+
+Narrator content
+----------------
+The narrator content (the NarratorULTA characters, the DGSNarrator chat style
+and the narrator voices/sounds) was compiled by Michael Notback (Discord: michael_notback).
+Used with his permission.
+
+Server and base content
+-----------------------
+The ULTA server (tsuserverULTA) is based on tsuserverCC by RealKaiser and the
+Case Cafe staff (https://github.com/RealKaiser/tsuserverCC), which in turn is
+a fork of tsuserver3 by the Attorney Online developers. Licensed under the
+GNU Affero General Public License v3.
+ULTA AO is designed to be used with a Case Cafe base install, which
+players bring themselves. That content was made by jooj11 and guyfugs.
