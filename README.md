@@ -35,5 +35,3 @@ The built-in effects and narrator content are not in this repository (see Credit
 ## License
 
 This client is based on AO2-Client, which is licensed under the GPLv3 and MIT licenses. See `LICENSE.GPLv3` and `LICENSE.MIT`.
-
-Characters, themes, backgrounds and other content are not covered by these licenses. They belong to their makers, so please don't redistribute them without permission.
