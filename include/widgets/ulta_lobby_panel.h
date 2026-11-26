@@ -1,8 +1,7 @@
 #ifndef ULTA_LOBBY_PANEL_H
 #define ULTA_LOBBY_PANEL_H
 
-// Minimal lobby for the locked build: title art, one Join button, a status
-// line and a few small buttons. It covers the stock lobby form.
+// Minimal lobby for the locked build, covers the stock lobby form
 
 #include <QPixmap>
 #include <QWidget>
@@ -21,15 +20,15 @@ public:
   void setStatus(const QString &p_text, State p_state);
   void setJoinEnabled(bool p_enabled);
   void setVersion(const QString &p_text);
-  // The "update available" card above the footer.
+  // Update card above the footer
   void showUpdate(const QString &p_version, const QString &p_notes, bool p_required = false);
-  // A required update keeps the Join button off until the client is updated.
+  // A required update keeps Join off
   void setJoinLocked(bool p_locked);
   void setUpdateProgress(int p_percent);
   void showUpdateError(const QString &p_text);
-  // A message in the update card (no button); it hides itself after a while.
+  // Message in the update card, hides itself after a while
   void showUpdateMessage(const QString &p_title, const QString &p_text, int p_hide_ms = 6000);
-  // Show the "Updates" button (only when this client can check for updates).
+  // Show the Updates button
   void setUpdatesEnabled(bool p_enabled);
 
 signals:

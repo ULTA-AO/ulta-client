@@ -4,9 +4,9 @@
 #include <QPainter>
 #include <QPixmap>
 
-// How much of the sepia tone is mixed in (256 = fully sepia)
+// Sepia mix (256 = full)
 static const int kSepiaMix = 140;
-// Slight darkening for the sepia look (256 = none)
+// Sepia darkening (256 = none)
 static const int kSepiaDark = 226;
 
 static inline int clamp255(int v)
@@ -51,7 +51,7 @@ void UltaFlashbackEffect::draw(QPainter *painter)
         outr = clamp255((r * 101 + g * 197 + b * 48) >> 8);
         outg = clamp255((r * 89 + g * 176 + b * 43) >> 8);
         outb = clamp255((r * 70 + g * 137 + b * 34) >> 8);
-        // Partial sepia: keep some of the original colors
+        // Keep some of the original colors
         outr = (r * (256 - kSepiaMix) + outr * kSepiaMix) >> 8;
         outg = (g * (256 - kSepiaMix) + outg * kSepiaMix) >> 8;
         outb = (b * (256 - kSepiaMix) + outb * kSepiaMix) >> 8;

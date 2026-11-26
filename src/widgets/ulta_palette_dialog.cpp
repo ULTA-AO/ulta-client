@@ -18,8 +18,7 @@ UltaPaletteDialog::UltaPaletteDialog(const QVector<UltaSlotInfo> &slot_infos,
 {
   setWindowTitle(tr("Custom text colors"));
 
-  // Don't inherit the app palette: under some setups it gives light text on
-  // this dialog's light background. Set readable colors explicitly.
+  // Set colors explicitly, the app palette can give light text on light
   setStyleSheet(QStringLiteral(
       "UltaPaletteDialog { background-color: #f0f0f0; }"
       "QLabel, QCheckBox { color: #101010; }"
@@ -28,7 +27,7 @@ UltaPaletteDialog::UltaPaletteDialog(const QVector<UltaSlotInfo> &slot_infos,
       "#ffffff; selection-background-color: #3a6ea5; selection-color: "
       "#ffffff; }"));
 
-  // Always exactly PRESET_COUNT hotslots.
+  // Always PRESET_COUNT hotslots
   while (m_presets.size() < PRESET_COUNT)
     m_presets.append(QHash<int, QColor>());
   if (m_active < 0 || m_active >= PRESET_COUNT)
@@ -59,7 +58,7 @@ UltaPaletteDialog::UltaPaletteDialog(const QVector<UltaSlotInfo> &slot_infos,
   preset_row->addStretch(1);
   root->addLayout(preset_row);
 
-  // One row per color slot: swatch, label, reset.
+  // One row per color slot
   QGridLayout *grid = new QGridLayout();
   for (int row = 0; row < m_slots.size(); ++row) {
     const UltaSlotInfo &info = m_slots.at(row);
@@ -150,8 +149,7 @@ QString UltaPaletteDialog::nearestColorName(const QColor &c)
       {QT_TR_NOOP("Pink"), 255, 192, 203},
   };
 
-  // "Redmean" weighted distance: closer to how people see color differences
-  // than plain RGB distance.
+  // Redmean distance, closer to how colors look than plain RGB
   const Named *best = &table[0];
   double best_dist = 1e18;
   for (const Named &n : table) {
@@ -209,8 +207,7 @@ void UltaPaletteDialog::refresh()
     const UltaSlotInfo &info = m_slots.at(row);
     bool overridden = m_presets.at(m_active).contains(info.slot);
     QColor c = m_presets.at(m_active).value(info.slot, info.theme_color);
-    // Pick black or white text so the hex code stays readable on the swatch.
-    // qGray weighs green most, so bright greens/yellows/cyans get black text.
+    // Black or white text, whichever reads better on the swatch
     QString fg = qGray(c.rgb()) > 110 ? "#000000" : "#ffffff";
     m_swatches[row]->setText(c.name());
     m_swatches[row]->setStyleSheet(
@@ -219,8 +216,7 @@ void UltaPaletteDialog::refresh()
             .arg(c.name(), fg));
     m_resets[row]->setEnabled(overridden);
 
-    // Label follows the actual color: "# Teal" for an overridden slot, the
-    // theme's own name for an untouched one. The theme name stays as tooltip.
+    // "# Teal" for a changed slot, the theme name otherwise (kept as tooltip)
     m_names[row]->setText(
         slotLabel(info.symbol, info.name, overridden ? &c : nullptr));
     m_names[row]->setToolTip(tr("Theme name: %1").arg(info.name));

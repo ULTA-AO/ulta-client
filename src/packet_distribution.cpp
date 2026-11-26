@@ -74,10 +74,8 @@ void AOApplication::server_packet_received(AOPacket *p_packet)
     client_id = f_contents.at(0).toInt();
     server_software = f_contents.at(1);
 
-    // ULTA: send the client's ID reply before emitting server_connected. Direct Connect
-    // sends askchaa from that signal; if askchaa goes first, the server answers
-    // with SI and the courtroom is built before the FL (feature list) arrives,
-    // so features like the pair button stay hidden until a theme reload.
+    // Send the ID reply before server_connected. Otherwise Direct Connect sends askchaa first and the
+    // courtroom is built before FL arrives, so the pair button stays hidden
     QStringList f_contents = {"AO2", get_version_string()};
     send_server_packet(new AOPacket("ID", f_contents));
 
@@ -146,15 +144,13 @@ void AOApplication::server_packet_received(AOPacket *p_packet)
     if (f_packet.contains("auth_packet", Qt::CaseInsensitive))
       auth_packet_supported = true;
     if (f_packet.contains("ulta_ext", Qt::CaseInsensitive)) {
-      // ULTA server: announce the client's extension protocol version. Only sent
-      // in reply to this flag, so stock servers never see the ULTA packet.
+      // Announce the extension protocol, only in reply to this flag
       ulta_supported = true;
       send_server_packet(new AOPacket(
           "ULTA", {QString::number(ULTA_PROTOCOL_VERSION), ulta_client_version()}));
     }
     else if (UltaLock::enabled) {
-      // Locked build: a server without ULTA extensions is not an ULTA server.
-      // Refuse it.
+      // Locked build: refuse a server without ULTA extensions
       net_manager->disconnect_from_server();
       if (lobby_constructed)
         w_lobby->show_offline(true);
@@ -374,9 +370,7 @@ void AOApplication::server_packet_received(AOPacket *p_packet)
 
     courtroom_loaded = true;
 
-    // ULTA: one quiet notice per connection when the server has no ULTA
-    // extensions. Not a popup - stock servers are the common case and nothing
-    // is broken; ULTA-only widgets simply stay hidden.
+    // One quiet notice if the server has no ULTA extensions, the ULTA widgets stay hidden
     if (!ulta_supported) {
       w_courtroom->append_server_chatmessage(
           "ULTA AO2",
@@ -388,15 +382,14 @@ void AOApplication::server_packet_received(AOPacket *p_packet)
     log_to_demo = false;
   }
   else if (header == "ULS") {
-    // ULTA v6: the server's scene state (blackout/whiteout + characters kept
-    // faded out), sent on joining an area and when it changes without a message.
+    // Scene state from the server (fade, characters faded out), sent on joining an area and when it changes
     if (!courtroom_constructed || !ulta_supported || f_contents.size() < 4)
       goto end;
     w_courtroom->apply_scene_state(f_contents.at(0), f_contents.at(1).toInt(),
                                    f_contents.at(2) == "1", f_contents.at(3));
   }
   else if (header == "ULD") {
-    // ULTA: whether this player may use narrator mode and flashbacks here.
+    // Whether this player may use narrator mode and flashbacks here
     if (!ulta_supported || f_contents.isEmpty())
       goto end;
     ulta_director = f_contents.at(0) == "1";
@@ -408,7 +401,7 @@ void AOApplication::server_packet_received(AOPacket *p_packet)
       w_courtroom->sync_ulta_director_ui();
   }
   else if (header == "ULF") {
-    // ULTA v7: the area's flashback state (look, owner, hold).
+    // The area's flashback state (look, owner, hold)
     if (!courtroom_constructed || !ulta_supported || f_contents.size() < 3)
       goto end;
     w_courtroom->apply_flash_state(f_contents.at(0), f_contents.at(1).toInt(),

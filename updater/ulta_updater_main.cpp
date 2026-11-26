@@ -2,10 +2,9 @@
 //
 //   ulta-updater --zip <release.zip> --dir <client folder> --pid <client pid> --exe <client exe name>
 //
-// It waits for the client to close, unpacks the zip into update/staging, moves
-// the files it replaces into update/backup, then moves the new files in. If
-// anything fails, the old files are put back. Finally the client is started
-// again.
+// Waits for the client to close, unpacks the zip into update/staging, moves
+// replaced files to update/backup and the new ones in. Puts the old files
+// back on failure, then starts the client again.
 
 #include "miniz.h"
 

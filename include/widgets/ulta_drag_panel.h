@@ -1,8 +1,7 @@
 #ifndef ULTA_DRAG_PANEL_H
 #define ULTA_DRAG_PANEL_H
 
-// ULTA AO2: a panel the user can drag around inside its parent window by
-// grabbing any part of it that isn't a control (its background or labels).
+// Panel that can be dragged by its background or labels
 
 #include <QFrame>
 #include <QPoint>
@@ -13,11 +12,11 @@ class UltaDragPanel : public QFrame {
 public:
   explicit UltaDragPanel(QWidget *parent = nullptr);
 
-  // Keep the panel fully inside its parent (call after resizing / restoring).
+  // Keep the panel inside its parent
   void clampToParent();
 
 signals:
-  // Emitted when the user lets go after dragging; pos is in parent coordinates.
+  // Emitted after a drag, pos is in parent coordinates
   void dragFinished(const QPoint &pos);
 
 protected:

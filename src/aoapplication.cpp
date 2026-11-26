@@ -15,8 +15,7 @@ static AOApplication *message_handler_context;
 void message_handler(QtMsgType type, const QMessageLogContext &context,
                      const QString &msg)
 {
-  // Hand the text to the debug log only once per message: a warning raised
-  // while forwarding must not be forwarded again (that would loop).
+  // Hand the text to the debug log once, a warning raised while forwarding would loop
   static thread_local bool forwarding = false;
   if (!forwarding && message_handler_context) {
     forwarding = true;
@@ -214,9 +213,8 @@ void AOApplication::initBASS()
           BASS_SetConfigPtr(BASS_CONFIG_MIDI_DEFFONT, QString(get_base_path() + "soundfont.sf2").toStdString().c_str());
           return;
         }
-        // ULTA: that device could not be opened (e.g. headphones that
-        // reconnected under a new identity). Remember why, then fall back to
-        // the default output below instead of leaving BASS uninitialised.
+        // Device could not be opened (e.g. headphones that reconnected), remember why and use the
+        // default output
         last_audio_error = BASS_ErrorGetCode();
         break;
       }

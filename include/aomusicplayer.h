@@ -15,9 +15,7 @@ public:
   void set_volume(int p_value, int channel = -1);
   void set_looping(bool loop_song, int channel = 0);
   void set_muted(bool toggle);
-  // ULTA: rebuild the audio engine on the current default output device and
-  // resume whatever was playing (same track, same position). Used after the
-  // output changed (e.g. headphones disconnected and reconnected).
+  // Rebuild the audio engine on the default output and resume the music
   void reload_device();
 
   const int m_channelmax = 4;

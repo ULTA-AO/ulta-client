@@ -16,7 +16,7 @@ class UltaFlashbackPanel : public UltaDragPanel {
 public:
   explicit UltaFlashbackPanel(QWidget *parent = nullptr);
 
-  // active: a flashback is running; mine: this player started it; held: it is held.
+  // active: running, mine: started by this player, held: held
   void setState(bool active, bool mine, bool held);
 
 signals:

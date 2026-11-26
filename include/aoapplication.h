@@ -103,17 +103,14 @@ public:
   bool y_offset_supported = false;
   bool expanded_desk_mods_supported = false;
   bool auth_packet_supported = false;
-  // ULTA extensions: true only if the server advertises "ulta_ext" in FL.
-  // Stock servers never do, so nothing ULTA-specific is ever sent to them.
+  // True if the server advertises "ulta_ext"
   bool ulta_supported = false;
-  // Set by the server (ULD): false when this player may not use narrator mode
-  // or flashbacks in the current area (only the area's CM and mods may).
+  // Set by the server (ULD), false if this player can't use narrator mode or flashbacks here
   bool ulta_director = true;
   // Current area name and its CMs (from ULD), shown in the status strip.
   QString ulta_area_name;
   QString ulta_area_cms;
-  // 1 = trio pairing; 2 = + custom text-color palette field;
-  // 3 = + narrator mode field; 4 = + narrator scene tools.
+  // Protocol version: 1 trio pairing, 2 colors, 3 narrator, 4 scene tools
   static constexpr int ULTA_PROTOCOL_VERSION = 7;
 
   ///////////////loading info///////////////////
@@ -382,15 +379,11 @@ public:
   QString asset_url;
 
   void initBASS();
-  // ULTA: 0 if the last initBASS() opened the wanted output; otherwise the BASS
-  // error code of the device that could not be opened (the client then fell
-  // back to the default output so it is never left without sound).
+  // 0 if the last initBASS() opened the wanted output, else the BASS error code (fell back to default)
   int last_audio_error = 0;
-  // ULTA: output device chosen from the volume-slider menu. Lasts for this run
-  // only (never written to the config, so a device that is gone next time can't
-  // leave the client silent). Empty = use the saved setting.
+  // Output device picked from the volume menu, this run only (empty = saved setting)
   QString session_audio_device;
-  // ULTA: false if BASS has lost its output device (e.g. headphones gone).
+  // False if BASS has lost its output device (e.g. headphones gone)
   bool audio_device_ok() const;
   static void load_bass_plugins();
   static void CALLBACK BASSreset(HSTREAM handle, DWORD channel, DWORD data,
@@ -415,8 +408,7 @@ public slots:
   void loading_cancelled();
 
 signals:
-  // Qt log text for the in-app debug log. Plain types, so it can be queued
-  // across threads.
+  // Qt log text for the debug log, queueable across threads
   void qt_log_text(int type, const QString &msg);
 };
 

@@ -49,10 +49,7 @@ public:
   }
   AOLayer(QWidget *p_parent, AOApplication *p_ao_app);
 
-  // ULTA: while true this layer ignores every attempt to show it (show() and
-  // the animation code all go through setVisible). Used to keep the characters
-  // hidden during an "alone" narration, no matter which code path loads a
-  // sprite while the text is typing.
+  // While true the layer ignores every attempt to show it (keeps characters hidden in an "alone" narration)
   bool force_hidden = false;
   void setVisible(bool p_visible) override
   {

@@ -8,8 +8,7 @@
 #define ULTA_CLIENT_VERSION "1.0.0"
 #endif
 
-// Newest theme marker version this client knows (ulta_theme.ini, [ulta] version).
-// Raise it when a new widget needs a position in the theme.
+// Newest theme marker version (ulta_theme.ini). Raise it when a new widget needs a theme position
 inline constexpr int ULTA_THEME_VERSION = 1;
 
 inline QString ulta_client_version()

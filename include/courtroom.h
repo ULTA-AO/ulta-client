@@ -259,14 +259,16 @@ public:
     DISPLAY_AND_IO,
     QUEUED,
   };
-  // Log the message contents and information such as evidence presenting etc. into the log file, the IC log, or both.
+  // Log the message contents and information such as evidence presenting etc. into the log file, the
+  // IC log, or both.
   void log_chatmessage(QString f_message, int f_char_id, QString f_showname = "", QString f_char = "", QString f_objection_mod = "", int f_evi_id = 0, int f_color = 0, LogMode f_log_mode=IO_ONLY, bool sender = false, QString f_palette = QString());
 
   // Log the message contents and information such as evidence presenting etc. into the IC logs
   void handle_callwords();
 
   // Handle the objection logic, if it's interrupting the currently parsing message.
-  // Returns true if this message has an objection, otherwise returns false. The result decides when to call handle_ic_message()
+  // Returns true if this message has an objection, otherwise returns false. The result decides when to
+  // call handle_ic_message()
   bool handle_objection();
 
   // Display the evidence image box when presenting evidence in IC
@@ -281,40 +283,32 @@ public:
   // Display the character's pair if present.
   void display_pair_character(QString other_charid, QString other_offset);
 
-  // ULTA: display the second pair partner (if any) and settle the three-way
-  // stacking order. No-op unless the server advertises "ulta_ext".
+  // Display the second pair partner and settle the stacking order
   void display_pair_character2();
   void apply_pair_stacking(bool p1_shown, bool p2_shown);
 
-  // ULTA: re-mark the pair list ("[x]" = partner 1, "[2]" = partner 2).
+  // Re-mark the pair list ("[x]" = partner 1, "[2]" = partner 2)
   void update_pair_list_marks();
 
-  // ULTA custom text colors. A palette maps color slot (c0..c11) -> color.
-  // Each player's own palette is sent with their messages; receivers apply the
-  // sender's palette to that message only (never their own to others').
-  // is_own = the message is the player's own: the "show other players' custom
-  // colors" opt-out must not hide their own colors.
+  // Custom text colors. A palette maps color slot (c0..c11) to a color, a message uses its sender's palette
+  // is_own: the "other players' colors" opt-out must not hide the player's own colors
   QHash<int, QColor> parse_palette(const QString &raw, bool is_own = false) const;
   QString ulta_palette_string() const;
   void load_ulta_color_settings();
   void save_ulta_color_settings();
-  // Make the text color dropdown's swatches and labels match the active
-  // hotslot. color_row_theme_names keeps each row's original theme name.
+  // Match the text color dropdown to the active hotslot
   void update_text_color_icons();
   QStringList color_row_theme_names;
   QHash<int, QColor> m_msg_palette;  // palette of the message being shown
   QHash<int, QColor> m_log_palette;  // palette for the chat-log line being written
-  // Testimony statements keep their base color (green); the sender's palette
-  // only recolors inline color spans in them (the server marks them with an
-  // "s" entry in the palette field).
+  // Statements keep their green base color, the palette only recolors inline spans ("s" in the palette field)
   bool m_msg_statement = false;
   bool m_log_statement = false;
   bool m_filter_base_stock = false; // filter_ic_text: use $s<N> for the base color
   static bool palette_marks_statement(const QString &raw);
   QVector<QHash<int, QColor>> ulta_presets; // own hotslots
   int ulta_active_preset = 0;
-  // How OTHER players' text is colored here: 0 = their custom colors,
-  // 1 = theme colors, 2 = the active hotslot (see UltaPaletteDialog).
+  // How other players' text is colored: 0 their colors, 1 theme colors, 2 active hotslot
   int ulta_other_colors_mode = 0;
 
   // ULTA narrator mode. The player's settings (saved in base/ulta.ini):
@@ -348,8 +342,7 @@ public:
   QLabel *ui_ulta_status = nullptr;
   void ulta_check_theme(); // one-time notice when the theme isn't ULTA approved
   QString m_ulta_theme_noted;
-  // ULTA v5: fade the speaker's own character in/out with a message. One-shot:
-  // chosen with the "Fd" button, sent with the next line, then cleared.
+  // Fade the speaker's character in/out with the next message ("Fd" button, one-shot)
   QPushButton *ui_ulta_charfade;
   QPushButton *ui_ulta_flash;
   UltaFlashbackPanel *ui_flash_panel;
@@ -377,8 +370,7 @@ public:
   void start_char_fx_in();      // this message: character fades in
   void start_char_fx_out();     // text finished: character fades out
   void sync_narrator_panel(); // show/hide the panel and fill it from the settings
-  // Send a scene tool: an IC message that plays one of the narrator
-  // character's emotes (1-based, as numbered in its char.ini) for everyone.
+  // Send a scene tool, an IC message that plays one of the narrator's emotes (1-based)
   QString scene_fx_token(int tool) const;
   void apply_flash_state(const QString &look, int owner, bool hold);
   void clear_flashback_local();
@@ -387,19 +379,16 @@ public:
   void play_tool_overlay(int tool);
   void tool_overlay_done();
   void clear_tool_overlay();
-  // Scene tools are ARMED by clicking (one at a time, click again to cancel)
-  // and play with the next Enter in the message box, together with the text.
+  // Scene tools are armed by a click (click again to cancel) and play with the next Enter
   int m_armed_tool = 0; // narrator emote number, 0 = none
   QList<QPushButton *> m_tool_buttons;
   QString m_tool_saved_placeholder;
   void arm_scene_tool(int emote_number);
-  // ULTA: rebuild the audio output on the current default device (after
-  // headphones were switched / lost) and resume the music where it was.
+  // Rebuild the audio output on the default device and resume the music
   void reload_audio_device(bool announce = true);
   void on_audio_slider_context_menu(const QPoint &pos);
-  // Scene effects (blackout / whiteout): a colored overlay over the scene,
-  // under the chatbox. It lasts until a fade IN, an area change, or (unless
-  // held) a line from a different character than the one who started it.
+  // Scene effects (blackout, whiteout): overlay under the chatbox. Lasts until a fade in, an area
+  // change or (unless held) another character speaks
   CharLayer *ui_vp_tool_overlay;   // narrator tool animation (menu, pointer, click) over the scene
   UltaFadeOverlay *ui_vp_fade;
   bool m_fade_on = false;
@@ -408,7 +397,7 @@ public:
   QCheckBox *ui_narrator_hold; // "hold the fade until the fade back in"
   void apply_scene_fx(const QString &token, int owner_cid);
   void clear_scene_fx();
-  // ULTA v6: adopt the server's scene state (fade: "-", "b" or "w").
+  // Adopt the server's scene state (fade: "-", "b" or "w")
   void apply_scene_state(const QString &fade, int owner, bool hold,
                          const QString &gone_csv);
   void on_viewport_context_menu(const QPoint &pos);
@@ -427,8 +416,7 @@ public:
   void parse_narration(const QString &raw, bool &on, QString &folder,
                        int &scene, QString &name,
                        QString *tool_token = nullptr) const;
-  // The "character" whose chat style, voice and shout bubbles the current
-  // message uses: the narrator's folder while narrating, else the speaker.
+  // Character whose chat style, voice and shouts the message uses (the narrator while narrating)
   QString style_char() const;
 
   // Handle the emote modifier value and proceed through the logic accordingly.
@@ -437,7 +425,8 @@ public:
   // Initialize the chatbox image, showname shenanigans, custom chatboxes, etc.
   void initialize_chatbox();
 
-  // Finally start displaying the chatbox we initialized, display the evidence, and play the talking or idle emote for the character.
+  // Finally start displaying the chatbox we initialized, display the evidence, and play the talking or
+  // idle emote for the character.
   // Callwords are also handled here.
   void handle_ic_speaking();
 
@@ -547,9 +536,7 @@ private:
   // 0 = in front, 1 = behind (ULTA adds 2 = in the middle of a trio)
   int pair_order = 0;
 
-  // ULTA: second pair partner, and which slot (0 or 1) the pair list edits.
-  // Offsets stay single: they position the speaker's own character; partners
-  // use their own.
+  // Second pair partner, and which slot (0 or 1) the pair list edits. Offsets stay single
   int other_charid2 = -1;
   int pair_slot = 0;
 
@@ -719,7 +706,8 @@ private:
   void gen_char_rgb_list(QString p_misc);
   QVector<QColor> char_color_rgb_list;
 
-  // Misc we used for the last message, and the one we're using now. Used to avoid loading assets when it's not needed
+  // Misc we used for the last message, and the one we're using now. Used to avoid loading assets when
+  // it's not needed
   QString current_misc;
   QString last_misc;
 
@@ -856,8 +844,7 @@ private:
   QComboBox *ui_pair_slot_dropdown; // ULTA: which partner the pair UI edits
   QPushButton *ui_ulta_colors;      // ULTA: opens the custom text colors dialog
   QPushButton *ui_ulta_narrator;    // ULTA: narrator mode toggle (right-click = settings)
-  // ULTA: narrator panel, visible while narrator mode is on. Draggable; the
-  // position the user chose is remembered (unless the theme places it).
+  // Narrator panel, shown while narrator mode is on, draggable, position remembered
   UltaDragPanel *ui_narrator_panel;
   bool ulta_narrator_panel_has_pos = false;
   QPoint ulta_narrator_panel_pos;

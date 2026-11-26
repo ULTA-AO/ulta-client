@@ -109,7 +109,7 @@ UltaLobbyPanel::UltaLobbyPanel(const QString &p_server_name, QWidget *parent)
   connect(m_about, &QPushButton::clicked, this, &UltaLobbyPanel::aboutClicked);
   connect(m_quit, &QPushButton::clicked, this, &UltaLobbyPanel::quitClicked);
 
-  // "Update available" card (hidden until the updater finds a newer release)
+  // Update card, hidden until a newer release is found
   m_update_card = new QWidget(this);
   m_update_card->setObjectName("ulta_update_card");
   m_update_title = new QLabel(m_update_card);
@@ -172,7 +172,7 @@ void UltaLobbyPanel::showUpdateMessage(const QString &p_title, const QString &p_
   m_update_card->show();
   layoutChildren();
   QTimer::singleShot(p_hide_ms, this, [this, p_title] {
-    // Only hide it if it still shows this message (an update card may have replaced it).
+    // Only if it still shows this message
     if (m_update_title->text() == p_title && !m_update_button->isVisible()) {
       m_update_card->hide();
       layoutChildren();
@@ -238,7 +238,7 @@ void UltaLobbyPanel::layoutChildren()
   const int gap2 = 36;       // server name to Join
   const int gap3 = 16;       // Join to status
 
-  // The title takes whatever height is left, up to 80% of the width.
+  // Title gets the remaining height, up to 80% of the width
   const int fixed = name_h + gap1 + gap2 + join_h + gap3 + status_h;
   const int card_h = (m_update_card && m_update_card->isVisible()) ? 108 : 0;
   const int avail = h - bottom_h - 24 - card_h;
@@ -252,8 +252,7 @@ void UltaLobbyPanel::layoutChildren()
 
   m_title_rect = QRect((w - title_size.width()) / 2, y, title_size.width(),
                        title_size.height());
-  // Scale once with smoothing: drawing the large image directly at a much
-  // smaller size leaves jagged edges.
+  // Scale once, smooth (drawing it big looks jagged)
   const qreal dpr = devicePixelRatioF();
   m_title_scaled = m_title.scaled(
       QSize(qRound(title_size.width() * dpr), qRound(title_size.height() * dpr)),
@@ -279,7 +278,7 @@ void UltaLobbyPanel::layoutChildren()
 
   const int by = h - 34;
   m_version->setGeometry(14, by, w / 3, 20);
-  // Footer buttons, right to left (the Updates button only when it is in use).
+  // Footer buttons, right to left (Updates only when in use)
   const int sw = 64;
   int right = w - 14;
   for (QPushButton *b : {m_quit, m_about, m_options, m_refresh, m_check}) {
@@ -288,8 +287,7 @@ void UltaLobbyPanel::layoutChildren()
     right -= sw;
     b->setGeometry(right, by - 2, sw, 24);
   }
-  // The title art is painted by the panel itself: repaint everything after a
-  // new arrangement, or pieces of the old picture stay on screen.
+  // Repaint, the panel draws the title itself
   update();
 }
 
@@ -304,7 +302,7 @@ void UltaLobbyPanel::paintEvent(QPaintEvent *)
   bg.setColorAt(1.0, QColor("#171a21"));
   p.fillRect(rect(), bg);
 
-  // Soft warm glow behind the title
+  // Glow behind the title
   QRadialGradient glow(width() / 2.0, m_title_rect.center().y(),
                        width() * 0.55);
   glow.setColorAt(0.0, QColor(214, 160, 40, 46));

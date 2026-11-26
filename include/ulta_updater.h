@@ -1,10 +1,9 @@
 #ifndef ULTA_UPDATER_H
 #define ULTA_UPDATER_H
 
-// Checks for a newer ULTA AO release, downloads it and hands it to the small
-// updater program. The release list is a signed file (latest.json plus
-// latest.json.sig, an Ed25519 signature). Nothing is downloaded or run unless
-// the signature matches the public key built into the client.
+// Checks for a newer release and hands it to the updater program.
+// The release info is signed (latest.json + latest.json.sig, Ed25519) and is
+// only trusted if the signature matches the key built into the client.
 
 #include <QByteArray>
 #include <QNetworkAccessManager>
@@ -20,17 +19,17 @@ class UltaUpdater : public QObject {
 public:
   explicit UltaUpdater(QObject *parent = nullptr);
 
-  // True when an update address was built into this client.
+  // True if an update address was built in
   static bool enabled();
-  // "1.0.10" is newer than "1.0.9"; a suffix such as "-beta" is ignored.
+  // "1.0.10" is newer than "1.0.9", a suffix like "-beta" is ignored
   static bool isNewer(const QString &remote, const QString &local);
-  // Checks a signature over a manifest (hex signature, raw manifest bytes).
+  // Check a hex signature over the raw manifest bytes
   static bool verifySignature(const QByteArray &manifest, const QString &sig_hex);
 
   void check();
   void install();
   QString newVersion() const { return m_version; }
-  // The release is marked required: playing needs the update first.
+  // Playing needs this update first
   bool required() const { return m_required; }
 
 signals:

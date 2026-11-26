@@ -1,8 +1,7 @@
 #ifndef ULTA_FLASHBACK_EFFECT_H
 #define ULTA_FLASHBACK_EFFECT_H
 
-// Flashback look for the viewport: sepia or black and white. Applied as a
-// graphics effect on the viewport widget and removed when the flashback ends.
+// Flashback look for the viewport, sepia or black and white
 
 #include <QGraphicsEffect>
 

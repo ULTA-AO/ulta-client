@@ -61,8 +61,7 @@ int main(int argc, char *argv[])
   main_app.installTranslator(&appTranslator);
 
   if (UltaLock::enabled) {
-    // First run: start on the ULTA default theme that ships with the client.
-    // After that the player's own choice is kept.
+    // First run: start on the default theme that ships with the client
     QSettings l_ulta(get_base_path() + "ulta.ini", QSettings::IniFormat);
     l_ulta.beginGroup("theme");
     if (!l_ulta.value("default_applied", false).toBool() &&

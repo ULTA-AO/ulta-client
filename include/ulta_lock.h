@@ -1,11 +1,9 @@
 #ifndef ULTA_LOCK_H
 #define ULTA_LOCK_H
 
-// ULTA locked-server build. Configure with
-//   -DULTA_LOCKED_SERVER=host:port  -DULTA_LOCKED_NAME="ULTA AO"
-// to bake in the one server this client may talk to (TCP). Without the flag
-// the client is the open dev variant. This is a SOFT lock: a modified build
-// can bypass it; real access control stays on the server.
+// Locked-server build: -DULTA_LOCKED_SERVER=host:port -DULTA_LOCKED_NAME="ULTA AO"
+// bakes in the only server (TCP) the client talks to. Without it the client is open.
+// Only a soft lock, a modified build can bypass it
 #ifdef ULTA_LOCKED_SERVER
 
 #include <QString>
@@ -40,8 +38,7 @@ inline bool allows(const QString &p_host, int p_port)
 
 #include <QString>
 
-// Open build: same API so call sites compile either way; never used at runtime
-// because `enabled` is false.
+// Open build: same API, `enabled` is false
 namespace UltaLock {
 inline constexpr bool enabled = false;
 inline QString host() { return QString(); }

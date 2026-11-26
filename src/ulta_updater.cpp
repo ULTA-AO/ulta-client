@@ -18,8 +18,7 @@
 extern "C" {
 #include "../third_party/tweetnacl/tweetnacl.h"
 
-// TweetNaCl needs this symbol to link, but the client only verifies signatures
-// and never creates keys, so any call to it is a bug.
+// Needed to link TweetNaCl, never called (the client only verifies)
 void randombytes(unsigned char *, unsigned long long)
 {
   qFatal("randombytes called in the update code");
@@ -65,7 +64,7 @@ bool UltaUpdater::verifySignature(const QByteArray &manifest, const QString &sig
   const QByteArray key = QByteArray::fromHex(QByteArray(ULTA_UPDATE_PUBLIC_KEY));
   if (sig.size() != crypto_sign_BYTES || key.size() != crypto_sign_PUBLICKEYBYTES)
     return false;
-  // TweetNaCl checks "signature followed by message" in one buffer.
+  // TweetNaCl wants the signature and message in one buffer
   QByteArray signed_message = sig + manifest;
   QByteArray opened(signed_message.size(), 0);
   unsigned long long opened_len = 0;
@@ -217,7 +216,7 @@ void UltaUpdater::install()
 void UltaUpdater::finish_download()
 {
   m_download->close();
-  // The signed manifest names the size and the SHA-256 of the file.
+  // Check the size and SHA-256 named in the manifest
   QFile file(m_zip_path);
   if (!file.open(QIODevice::ReadOnly) || file.size() != m_size) {
     fail_install("the downloaded file has the wrong size");
@@ -247,7 +246,7 @@ void UltaUpdater::hand_over()
     fail_install("the updater program is missing");
     return;
   }
-  // Run a copy from the temp folder, so the updater can also replace itself.
+  // Run from a temp copy so the updater can replace itself
   const QString copy = QDir::temp().filePath(
       QString("ulta-updater-%1.exe").arg(QCoreApplication::applicationPid()));
   QFile::remove(copy);

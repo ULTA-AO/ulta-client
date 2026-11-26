@@ -94,7 +94,7 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
   ui_vp_sideplayer_char->setObjectName("ui_vp_sideplayer_char");
   ui_vp_sideplayer_char->masked = false;
   ui_vp_sideplayer_char->hide();
-  // ULTA: second pair partner (stays hidden unless the server is ULTA-enabled)
+  // Second pair partner (stays hidden unless the server is ULTA-enabled)
   ui_vp_sideplayer2_char = new CharLayer(ui_viewport, ao_app);
   ui_vp_sideplayer2_char->setObjectName("ui_vp_sideplayer2_char");
   ui_vp_sideplayer2_char->masked = false;
@@ -107,14 +107,13 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
   ui_vp_effect->setObjectName("ui_vp_effect");
 
   ui_vp_evidence_display = new AOEvidenceDisplay(ui_viewport, ao_app);
-  // ULTA: narrator tool animation (menu, pointer, click), above the desk
+  // Narrator tool animation (menu, pointer, click), above the desk
   ui_vp_tool_overlay = new CharLayer(ui_viewport, ao_app);
   ui_vp_tool_overlay->setObjectName("ui_vp_tool_overlay");
   ui_vp_tool_overlay->masked = false;
   ui_vp_tool_overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
   ui_vp_tool_overlay->hide();
-  // ULTA: blackout/whiteout layer (over the characters, under the chatbox)
-  // (a sibling of the viewport, so a flashback look never tints the fade)
+  // Blackout/whiteout layer, a sibling of the viewport so a flashback does not tint it
   ui_vp_fade = new UltaFadeOverlay(this);
   ui_vp_evidence_display->setObjectName("ui_vp_evidence_display");
 
@@ -177,8 +176,7 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
   ui_debug_log->setOpenExternalLinks(true);
   ui_debug_log->hide();
   ui_debug_log->setObjectName("ui_debug_log");
-  // Log text arrives queued (it may come from any thread) and is written to
-  // the debug log in small batches, so a burst of messages can't freeze the UI.
+  // Log text arrives queued and is written in small batches, so a burst cannot freeze the UI
   m_debug_flush = new QTimer(this);
   m_debug_flush->setSingleShot(true);
   connect(m_debug_flush, &QTimer::timeout, this, &Courtroom::flush_debug_log);
@@ -447,14 +445,14 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
   ui_pair_order_dropdown->addItem(tr("To behind"));
   ui_pair_order_dropdown->setObjectName("ui_pair_order_dropdown");
 
-  // ULTA: picks which pair partner (1 or 2) the character list edits.
+  // Picks which pair partner (1 or 2) the character list edits
   ui_pair_slot_dropdown = new QComboBox(this);
   ui_pair_slot_dropdown->addItem(tr("Partner 1"));
   ui_pair_slot_dropdown->addItem(tr("Partner 2"));
   ui_pair_slot_dropdown->setObjectName("ui_pair_slot_dropdown");
   ui_pair_slot_dropdown->hide();
 
-  // ULTA: custom text colors button (shown only on ULTA-enabled servers)
+  // Custom text colors button (shown only on ULTA-enabled servers)
   ui_ulta_colors = new QPushButton(tr("Aa"), this);
   ui_ulta_colors->setObjectName("ui_ulta_colors");
   ui_ulta_colors->setToolTip(tr("Custom text colors: choose your own colors "
@@ -462,7 +460,7 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
   ui_ulta_colors->hide();
   load_ulta_color_settings();
 
-  // ULTA: narrator mode toggle (right-click opens its settings)
+  // Narrator mode toggle (right-click opens its settings)
   ui_ulta_narrator = new QPushButton(tr("Nr"), this);
   ui_ulta_narrator->setObjectName("ui_ulta_narrator");
   ui_ulta_narrator->setCheckable(true);
@@ -470,7 +468,7 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
   ui_ulta_narrator->hide();
   load_ulta_narrator_settings();
 
-  // ULTA v5: one-shot fade of the player's own character (click for the menu)
+  // One-shot fade of the player's own character (click for the menu)
   ui_ulta_charfade = new QPushButton(tr("Fd"), this);
   ui_ulta_charfade->setObjectName("ui_ulta_charfade");
   ui_ulta_charfade->setCheckable(true);
@@ -481,8 +479,7 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
   connect(ui_viewport, &QWidget::customContextMenuRequested, this,
           &Courtroom::on_viewport_context_menu);
 
-  // ULTA: the narrator panel (scene / voice / name). Floats over the lower-left
-  // of the viewport by default; a theme can place it with `ulta_narrator_panel`.
+  // Narrator panel, floats over the lower left of the viewport (theme key `ulta_narrator_panel`)
   ui_narrator_panel = new UltaDragPanel(this);
   ui_narrator_panel->setObjectName("ui_narrator_panel");
   ui_narrator_panel->setToolTip(tr("Drag the panel to move it."));
@@ -555,8 +552,7 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
     tools_layout->setContentsMargins(0, 2, 0, 0);
     tools_layout->setSpacing(3);
 
-    // Each tool plays one emote of the narrator character (numbers are the
-    // emote numbers in its char.ini).
+    // Each tool plays one emote of the narrator character
     struct ToolDef {
       QString label;
       int emote;
@@ -636,8 +632,8 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
   }
   ui_narrator_panel->hide();
 
-  // ULTA: flashback (sepia / black and white) button and panel
-  // ULTA status strip: area, CMs and active scene effects.
+  // Flashback button and panel
+  // Status strip: area, CMs and active scene effects
   ui_ulta_status = new QLabel(this);
   ui_ulta_status->setObjectName("ui_ulta_status");
   ui_ulta_status->setTextFormat(Qt::RichText);
@@ -894,8 +890,7 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
 
 void Courtroom::on_application_state_changed(Qt::ApplicationState state)
 {
-  // ULTA: after being away (e.g. headphones disconnected and reconnected),
-  // BASS may be holding a dead output device. Rebuild it if so.
+  // After being away BASS may hold a dead output device, rebuild it
   if (state == Qt::ApplicationActive && !ao_app->audio_device_ok())
     reload_audio_device(false);
 
@@ -1123,12 +1118,10 @@ void Courtroom::set_widgets()
   ui_pair_button->setToolTip(
       tr("Display the list of characters to pair with."));
 
-  // ULTA second-partner controls. They only exist on ULTA-enabled servers;
-  // elsewhere the pair UI is exactly the stock one.
+  // Second partner controls, only on ULTA servers
   ui_pair_slot_dropdown->hide();
   if (ao_app->ulta_supported) {
-    // "To middle" only makes sense with two partners (matches "To front" /
-    // "To behind").
+    // "To middle" only makes sense with two partners
     if (ui_pair_order_dropdown->count() < 3)
       ui_pair_order_dropdown->addItem(tr("To middle"));
 
@@ -1460,9 +1453,8 @@ void Courtroom::set_widgets()
          "the dropdown to change its color!"));
   set_text_color_dropdown();
 
-  // ULTA custom colors button. A theme can place it with `ulta_colors_button`;
-  // otherwise a small square is carved off the right end of the text color
-  // dropdown so the rest of the layout isn't disturbed.
+  // Custom colors button (theme key `ulta_colors_button`), else a square off the right end of the text
+  // color dropdown
   ui_ulta_colors->hide();
   if (ao_app->ulta_supported) {
     pos_size_type colors_design = ao_app->get_element_dimensions(
@@ -1529,9 +1521,7 @@ void Courtroom::set_widgets()
   locked_brush =
       QBrush(ao_app->get_color("area_locked_color", "courtroom_design.ini"));
 
-  // ULTA narrator button. A theme can place it with `ulta_narrator_button`;
-  // otherwise a small square is carved off the right end of the showname box
-  // (the name is replaced by the narrator's while narrating anyway).
+  // Narrator button (theme key `ulta_narrator_button`), else a square off the right end of the showname box
   ui_ulta_narrator->hide();
   m_ulta_nr_placed = false;
   if (ao_app->ulta_supported) {
@@ -1551,8 +1541,7 @@ void Courtroom::set_widgets()
       m_ulta_nr_placed = true;
     }
 
-    // Character fade button: `ulta_fade_button` in the theme, otherwise a
-    // small button floating over the lower-right corner of the viewport.
+    // Fade button (theme key `ulta_fade_button`), else floating over the lower right of the viewport
     ui_ulta_charfade->hide();
     pos_size_type fade_design = ao_app->get_element_dimensions(
         "ulta_fade_button", "courtroom_design.ini");
@@ -1572,10 +1561,8 @@ void Courtroom::set_widgets()
     }
     update_charfade_button();
 
-    // Flashback button: `ulta_flashback_button` in the theme, otherwise
-    // floating next to the fade button. Its panel: `ulta_flashback_panel`,
-    // otherwise the upper-right corner of the viewport (or where it was
-    // dragged).
+    // Flashback button (`ulta_flashback_button`), else next to the fade button. Panel:
+    // `ulta_flashback_panel`, else the upper right of the viewport
     ui_ulta_flash->hide();
     pos_size_type flash_design = ao_app->get_element_dimensions(
         "ulta_flashback_button", "courtroom_design.ini");
@@ -1609,8 +1596,7 @@ void Courtroom::set_widgets()
     ui_flash_panel->clampToParent();
     sync_flash_panel();
 
-    // The status strip: `ulta_status_strip` in the theme, otherwise a thin
-    // translucent bar along the top of the viewport.
+    // Status strip (`ulta_status_strip`), else a thin bar along the top of the viewport
     pos_size_type status_design = ao_app->get_element_dimensions(
         "ulta_status_strip", "courtroom_design.ini");
     if (status_design.width >= 0 && status_design.height >= 0) {
@@ -1627,10 +1613,7 @@ void Courtroom::set_widgets()
     ui_ulta_status->raise();
     update_ulta_status();
 
-    // The narrator panel: placed by the theme if it defines
-    // `ulta_narrator_panel`, otherwise floating over the lower-left corner of
-    // the viewport (the viewport is where the scene is, so it never pushes
-    // other controls around).
+    // Narrator panel (`ulta_narrator_panel`), else floating over the lower left of the viewport
     pos_size_type panel_design = ao_app->get_element_dimensions(
         "ulta_narrator_panel", "courtroom_design.ini");
     if (panel_design.width >= 0 && panel_design.height >= 0) {
@@ -1836,11 +1819,8 @@ void Courtroom::done_received()
 
 void Courtroom::set_background(QString p_background, bool display)
 {
-  // ULTA: moving to another area starts with a clear scene. That is the form
-  // of this packet that carries a position (display == true). A plain
-  // background change inside the same area (just the name) must NOT remove
-  // a blackout: going dark, swapping the background and fading back in is
-  // a normal scene change.
+  // A new area starts with a clear scene (the BN with a position). A background change inside the area
+  // keeps a blackout, so "go dark, swap the background, fade in" works
   if (display) {
     clear_scene_fx();
     clear_tool_overlay();
@@ -2443,15 +2423,12 @@ void Courtroom::on_chat_return_pressed()
   QTimer::singleShot(Options::getInstance().chatRateLimit(), this,
                      [this] { ui_ic_chat_message->blockSignals(false); });
 
-  // ULTA: an armed scene tool plays now, together with the typed line. (The
-  // input box is cleared when the player's own message comes back, like any
-  // message.)
+  // An armed scene tool plays now, with the typed line
   if (m_armed_tool != 0 && ulta_narrator_on && ao_app->ulta_supported &&
       ao_app->ulta_director) {
     const int tool = m_armed_tool;
     disarm_scene_tool();
-    // Tools go out as an ordinary narrated message (the player's own character
-    // and partners stay on screen) with the tool flag attached.
+    // Tools go out as a normal narrated message with the tool flag
     m_pending_fx_token = tool < 0 ? scene_fx_token(tool)
                                   : QString("t%1").arg(tool);
   }
@@ -2731,9 +2708,8 @@ void Courtroom::on_chat_return_pressed()
     }
   }
 
-  // ULTA: second pair partner, appended after the 26 standard fields. Only
-  // sent to ULTA servers, and only when every standard field above was sent
-  // (so the extras land at the fixed positions the server expects).
+  // Second pair partner, appended after the 26 standard fields (ULTA servers only, and only if all
+  // standard fields were sent)
   if (ao_app->ulta_supported && ao_app->cccc_ic_supported &&
       ao_app->looping_sfx_supported && ao_app->additive_text_supported &&
       ao_app->effects_supported) {
@@ -2808,7 +2784,7 @@ void Courtroom::chatmessage_enqueue(QStringList p_contents)
   if (p_contents.size() < MS_MINIMUM)
     return;
 
-  // ULTA: a narrated message is logged (and shown) under the narrator's name.
+  // A narrated message is logged (and shown) under the narrator's name
   if (ao_app->ulta_supported && p_contents.size() > NARRATION) {
     bool n_on = false;
     QString n_folder, n_name;
@@ -2881,7 +2857,8 @@ void Courtroom::chatmessage_enqueue(QStringList p_contents)
   // Objections also immediately play the message
   if (start_queue || is_objection)
     chatmessage_dequeue(); // Process the message instantly
-  // Otherwise, since a message is being parsed, chat_tick() should be called which will call dequeue once it's done.
+  // Otherwise, since a message is being parsed, chat_tick() should be called which will call dequeue
+  // once it's done.
 }
 
 void Courtroom::chatmessage_dequeue()
@@ -2924,22 +2901,20 @@ void Courtroom::unpack_chatmessage(QStringList p_contents)
     }
   }
 
-  // ULTA: the sender's custom text colors for this message (empty = none, or
-  // the user turned custom colors off).
+  // Sender's custom text colors for this message (empty = none)
   m_msg_palette = parse_palette(m_chatmessage[PAL_OVERRIDES],
                                 m_chatmessage[CHAR_ID].toInt() == m_cid);
   m_msg_statement = ao_app->ulta_supported &&
                     palette_marks_statement(m_chatmessage[PAL_OVERRIDES]);
 
-  // ULTA: narrator mode of this message (chat style, voice, name, scene).
+  // Narrator mode of this message (chat style, voice, name, scene)
   m_narr_on = false;
   QString tool_token;
   if (ao_app->ulta_supported)
     parse_narration(m_chatmessage[NARRATION], m_narr_on, m_narr_folder,
                     m_narr_scene, m_narr_name, &tool_token);
   {
-    // Scene effects: this message starts one, or ends it, or (if it comes
-    // from a different character and the fade isn't held) the scene returns.
+    // Scene effects: this message starts or ends one, or another character speaking ends it (unless held)
     static const QRegularExpression fx_re("^[bw][oi]h?$");
     const int speaker_cid = m_chatmessage[CHAR_ID].toInt();
     const bool fx_token = fx_re.match(tool_token).hasMatch();
@@ -2953,16 +2928,16 @@ void Courtroom::unpack_chatmessage(QStringList p_contents)
     if (m_flash_on && !m_flash_hold && speaker_cid != m_flash_owner)
       clear_flashback_local();
   }
-  // The narrator speaks, not the character. Pre-animation, zoom and sound stay
-  // the sender's own choices. The character just never "talks" (see
-  // color_is_talking).
+  // The narrator speaks, not the character. Pre-animation, zoom and sound stay the sender's own
+  // choice, the character just never "talks"
   if (m_narr_on)
     m_chatmessage[SHOWNAME] = m_narr_name;
 
   // if the char ID matches our client's char ID (most likely, this is our message coming back to us)
   bool sender = Options::getInstance().desynchronisedLogsEnabled() || m_chatmessage[CHAR_ID].toInt() == m_cid;
 
-  // We have logs displaying as soon as we reach the message in our queue, which is a less confusing but also less accurate experience for the user.
+  // We have logs displaying as soon as we reach the message in our queue, which is a less confusing
+  // but also less accurate experience for the user.
   log_chatmessage(m_chatmessage[MESSAGE], m_chatmessage[CHAR_ID].toInt(), m_chatmessage[SHOWNAME], m_chatmessage[CHAR_NAME], m_chatmessage[OBJECTION_MOD], m_chatmessage[EVIDENCE_ID].toInt(), m_chatmessage[TEXT_COLOR].toInt(), DISPLAY_ONLY, sender, m_chatmessage[PAL_OVERRIDES]);
 
   // Process the callwords for this message
@@ -2976,14 +2951,15 @@ void Courtroom::unpack_chatmessage(QStringList p_contents)
   ui_vp_objection->stop();
   chat_tick_timer->stop();
   ui_vp_evidence_display->reset();
-  // This chat msg is not objection so we're not waiting on the objection animation to finish to display the character.
+  // This chat msg is not objection so we're not waiting on the objection animation to finish to
+  // display the character.
   if (!handle_objection())
     handle_ic_message();
 }
 
 void Courtroom::log_chatmessage(QString f_message, int f_char_id, QString f_showname, QString f_char, QString f_objection_mod, int f_evi_id, int f_color, LogMode f_log_mode, bool sender, QString f_palette)
 {
-  // ULTA: colors for this log line come from the sender's palette (if any).
+  // Colors for this log line come from the sender's palette (if any)
   m_log_palette = parse_palette(f_palette, f_char_id != -1 && f_char_id == m_cid);
   m_log_statement = ao_app->ulta_supported && palette_marks_statement(f_palette);
   auto palette_guard = qScopeGuard([this]() {
@@ -3431,16 +3407,14 @@ void Courtroom::handle_ic_message()
 
   int emote_mod = m_chatmessage[EMOTE_MOD].toInt();
   bool immediate = m_chatmessage[IMMEDIATE].toInt() == 1;
-  // ULTA: every message starts with the character layers allowed to show; an
-  // "alone" narration then locks them hidden for the whole message (the
-  // talking/idle animation code would otherwise re-show them while typing).
+  // Every message starts with the character layers allowed to show, an "alone" narration then keeps
+  // them hidden for the whole message
   reset_char_fx();
   ui_vp_player_char->force_hidden = false;
   ui_vp_sideplayer_char->force_hidden = false;
   ui_vp_sideplayer2_char->force_hidden = false;
   if (m_narr_on && m_narr_scene == 1) {
-    // ULTA narrator, "alone": nobody is shown, only the background and the
-    // narration. (The next normal message shows the layers again.)
+    // "Alone": only the background and the narration (the next message shows the layers again)
     ui_vp_player_char->stop();
     ui_vp_player_char->hide();
     ui_vp_player_char->force_hidden = true;
@@ -3455,7 +3429,7 @@ void Courtroom::handle_ic_message()
   }
   else if (m_chatmessage[EMOTE] != "") {
     ui_vp_player_char->show(); // may have been hidden by an "alone" narration
-    // ULTA v5: the speaker's own character fades in / out with this line.
+    // The speaker's own character fades in / out with this line
     if (ao_app->ulta_supported) {
       const int fx_cid = m_chatmessage[CHAR_ID].toInt();
       const QString fx = m_chatmessage[CHAR_FX];
@@ -3467,8 +3441,8 @@ void Courtroom::handle_ic_message()
         start_char_fx_in();
       }
       else if (fx == "o" || fx == "O") {
-        // "O" = fade out and STAY gone through this character's later lines
-        // (an unseen voice) until it fades back in. "o" = hidden until they speak again.
+        // "O" = fade out and stay gone through later lines (unseen voice) until a fade in, "o" =
+        // hidden until they speak again
         if (fx == "O")
           m_charfx_gone.insert(fx_cid);
         else {
@@ -3498,7 +3472,7 @@ void Courtroom::handle_ic_message()
     if (emote_mod != ZOOM && emote_mod != PREANIM_ZOOM) {
       // Display the pair character
       display_pair_character(m_chatmessage[OTHER_CHARID], m_chatmessage[OTHER_OFFSET]);
-      // ULTA: second partner + three-way stacking (no-op on stock servers)
+      // Second partner + three-way stacking (no-op on stock servers)
       display_pair_character2();
     }
 
@@ -3511,7 +3485,8 @@ void Courtroom::handle_ic_message()
     start_chat_ticking();
   }
 
-  // if we have instant objections disabled, and queue is not empty, check if next message after this is an objection.
+  // if we have instant objections disabled, and queue is not empty, check if next message after this
+  // is an objection.
   if (!Options::getInstance().objectionSkipQueueEnabled() && chatmessage_queue.size() > 0)
   {
     QStringList p_contents = chatmessage_queue.head();
@@ -3550,7 +3525,8 @@ void Courtroom::do_screenshake()
     int frequency = 20; // How often in ms is there a "jolt" frame
     // Maximum deviation from the origin position. This is 7 pixels for a 256x192 viewport,
     // so we scale that value in accordance with the current viewport height so the shake
-    // is roughly the same intensity regardless of viewport size. Done as a float operation for maximum accuracy.
+    // is roughly the same intensity regardless of viewport size. Done as a float operation for maximum
+    // accuracy.
     int max_deviation = 7 * (float(ui_viewport->height()) / 192);
     int maxframes = 15; // duration / frequency;
     screenshake_animation->setDuration(duration);
@@ -3686,8 +3662,7 @@ void Courtroom::initialize_chatbox()
 
   int f_charid = m_chatmessage[CHAR_ID].toInt();
   if (m_narr_on) {
-    // ULTA: narration is always shown under the narrator's name, whatever the
-    // viewer's showname setting is.
+    // Narration always shows under the narrator's name
     ui_vp_showname->setText(m_narr_name);
   }
   else if (f_charid >= 0 && f_charid < char_list.size() &&
@@ -3855,7 +3830,8 @@ void Courtroom::handle_ic_speaking()
 
     // Obtain character information for our character
     QString filename;
-    // I still hate this hardcoding. If we're on pos pro, hlp and wit, use prosecution_speedlines. Otherwise, defense_speedlines.
+    // I still hate this hardcoding. If we're on pos pro, hlp and wit, use prosecution_speedlines.
+    // Otherwise, defense_speedlines.
     if (side == "pro" || side == "hlp" || side == "wit")
       filename = "prosecution_speedlines";
     else
@@ -4016,9 +3992,7 @@ QString Courtroom::filter_ic_text(QString p_text, bool html, int target_pos,
           {
             if (f_character == markdown_start) {
               if (html) {
-                // Close the span when we are inside one of this color. The
-                // base color is the first stack entry and is never closed,
-                // even when it is the same color (a green statement).
+                // Close the span if inside one of this color, the base color (first entry) is never closed
                 if (ic_color_stack.size() > 1 && ic_color_stack.top() == c) {
                   ic_color_stack.pop(); // Cease our coloring
                   is_end = true;
@@ -4487,7 +4461,8 @@ void Courtroom::start_chat_ticking()
         ui_vp_sticker->stop();
       }
     }
-    // If we're not already waiting on the next message, start the timer. We could be overriden if there's an objection planned.
+    // If we're not already waiting on the next message, start the timer. We could be overriden if
+    // there's an objection planned.
     int delay = Options::getInstance().textStayTime();
     if (delay > 0 && !text_queue_timer->isActive())
       text_queue_timer->start(delay);
@@ -4592,12 +4567,14 @@ void Courtroom::chat_tick()
     real_tick_pos = ui_vp_message->toPlainText().size();
 
 
-    // If we're not already waiting on the next message, start the timer. We could be overriden if there's an objection planned.
+    // If we're not already waiting on the next message, start the timer. We could be overriden if
+    // there's an objection planned.
     int delay = Options::getInstance().textStayTime();
     if (delay > 0 && !text_queue_timer->isActive())
       text_queue_timer->start(delay);
 
-    // if we have instant objections disabled, and queue is not empty, check if next message after this is an objection.
+    // if we have instant objections disabled, and queue is not empty, check if next message after this
+    // is an objection.
     if (!Options::getInstance().objectionSkipQueueEnabled() && chatmessage_queue.size() > 0)
     {
       QStringList p_contents = chatmessage_queue.head();
@@ -5829,8 +5806,7 @@ void Courtroom::on_pair_list_clicked(QModelIndex p_index)
   QListWidgetItem *f_item = ui_pair_list->item(p_index.row());
   QString real_char = f_item->text();
 
-  // Strip the selection markers: " [x]" (stock) or " [1]" (ULTA) = partner 1,
-  // " [2]" = partner 2.
+  // Strip the selection markers: " [x]" or " [1]" = partner 1, " [2]" = partner 2
   if (real_char.endsWith(" [x]") || real_char.endsWith(" [1]") ||
       real_char.endsWith(" [2]"))
     real_char.chop(4);
@@ -6240,14 +6216,13 @@ void Courtroom::on_pair_slot_dropdown_changed(int p_index)
   pair_slot = p_index;
 }
 
-// ---- ULTA narrator mode -------------------------------------------------
+// ---- Narrator mode ----------------------------------------------------
 
 void Courtroom::parse_narration(const QString &raw, bool &on, QString &folder,
                                 int &scene, QString &name,
                                 QString *tool_token) const
 {
-  // "folder;scene;name" with an optional scene token at the end. Anything
-  // unexpected means "not narrating".
+  // "folder;scene;name" with an optional scene token, anything else means not narrating
   on = false;
   if (tool_token)
     tool_token->clear();
@@ -6484,8 +6459,7 @@ void Courtroom::update_ulta_status()
 
 void Courtroom::sync_ulta_director_ui()
 {
-  // Called when the server says whether this player may use narrator mode and
-  // flashbacks here (only the area's CM and mods may).
+  // The server says whether this player may use narrator mode and flashbacks here (area CM and mods only)
   update_narrator_button();
   sync_flash_panel();
   update_ulta_status();
@@ -6493,8 +6467,7 @@ void Courtroom::sync_ulta_director_ui()
 
 void Courtroom::sync_narrator_panel()
 {
-  // Fill the panel from the saved settings (without echoing the changes back)
-  // and show it only while narrator mode is on, on an ULTA server.
+  // Fill the panel from the saved settings, show it only while narrator mode is on
   ui_narrator_scene->blockSignals(true);
   ui_narrator_voice->blockSignals(true);
   ui_narrator_name->blockSignals(true);
@@ -6506,8 +6479,7 @@ void Courtroom::sync_narrator_panel()
   ui_narrator_voice->blockSignals(false);
   ui_narrator_name->blockSignals(false);
 
-  // Only while in the scene: not on the character select screen, and not as a
-  // spectator without a character.
+  // Only while in the scene, not on character select or as a spectator
   const bool in_scene = m_cid != -1 && ui_char_select_background->isHidden();
   const bool visible = ulta_narrator_on && ao_app->ulta_supported &&
                        ao_app->ulta_director && in_scene;
@@ -6665,9 +6637,8 @@ void Courtroom::apply_scene_fx(const QString &token, int owner_cid)
   const bool white = token.startsWith('w');
   const bool out = token.size() > 1 && token.at(1) == 'o';
   const QColor wanted = white ? QColor(255, 255, 255) : QColor(0, 0, 0);
-  // Each fade starts fresh. If a fade of the same color is on screen it simply
-  // continues; a different color first clears the scene (no instant
-  // black-to-white jump) and then runs its own fade.
+  // A fade of the same color continues, a different color clears the scene first (no instant black to
+  // white jump)
   const bool same_color =
       ui_vp_fade->fadeLevel() > 0.0 && ui_vp_fade->fadeColor() == wanted;
   if (!same_color) {
@@ -6683,8 +6654,7 @@ void Courtroom::apply_scene_fx(const QString &token, int owner_cid)
   }
   else {
     clear_scene_fx_state();
-    // A fade IN works on its own: if nothing is covering the scene yet, start
-    // fully covered and fade it away (a scene starting, or a white flash).
+    // A fade in works alone: start fully covered and fade away
     if (ui_vp_fade->fadeLevel() <= 0.0)
       ui_vp_fade->setFadeLevel(1.0);
     ui_vp_fade->fadeTo(0.0, 900);
@@ -6759,8 +6729,7 @@ void Courtroom::clear_tool_overlay()
 
 QString Courtroom::scene_fx_token(int tool) const
 {
-  // Negative ids are fades: bo/bi = to/from black, wo/wi = to/from white.
-  // A fade out can be held (suffix h).
+  // Negative ids are fades: bo/bi = to/from black, wo/wi = to/from white, suffix h = hold
   static const QStringList fx_tokens = {"bo", "bi", "wo", "wi"};
   const int fx_index = -tool - 1;
   if (fx_index < 0 || fx_index >= fx_tokens.size())
@@ -6832,14 +6801,11 @@ QHash<int, QColor> Courtroom::parse_palette(const QString &raw, bool is_own) con
   QHash<int, QColor> result;
   if (!ao_app->ulta_supported)
     return result;
-  // A testimony title always uses the stock colors, whatever palette or
-  // "other players' colors" setting is active.
+  // A testimony title always uses the stock colors
   if (raw.split(",", Qt::SkipEmptyParts).contains("t"))
     return result;
 
-  // How other players' text looks is the player's own choice. Their own
-  // messages always use their own colors (the server echoes them back with the
-  // palette).
+  // How other players' text looks is the player's choice, their own messages always use their own colors
   if (!is_own) {
     if (ulta_other_colors_mode == 1) // theme colors only
       return result;
@@ -7074,7 +7040,7 @@ void Courtroom::set_text_color_dropdown()
     default_color_rgb_list.append(color);
   }
 
-  // ULTA: show the active hotslot colors in the swatches.
+  // Show the active hotslot colors in the swatches
   update_text_color_icons();
 }
 
@@ -7093,8 +7059,7 @@ void Courtroom::update_text_color_icons()
     pixmap.fill(color);
     ui_text_color->setItemIcon(row, pixmap);
 
-    // ULTA servers: label = "<symbol> <name>", named after the actual color
-    // when it has been changed. Stock servers keep the theme's plain names.
+    // ULTA servers: label "<symbol> <name>", named after the color if changed
     if (ao_app->ulta_supported) {
       QString theme_name = color_row_theme_names.value(row);
       ui_text_color->setItemText(
@@ -7547,7 +7512,7 @@ Courtroom::~Courtroom()
   delete blip_player;
 }
 
-// ---- ULTA v5: character fade --------------------------------------------
+// ---- Character fade ---------------------------------------------------
 
 void Courtroom::update_charfade_button()
 {

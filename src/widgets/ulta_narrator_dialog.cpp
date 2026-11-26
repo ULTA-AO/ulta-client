@@ -13,7 +13,7 @@ UltaNarratorDialog::UltaNarratorDialog(int scene, const QString &folder,
 {
   setWindowTitle(tr("Narrator settings"));
 
-  // Same explicit styling as the colors dialog: don't inherit the app palette.
+  // Own styling, same as the colors dialog
   setStyleSheet(QStringLiteral(
       "UltaNarratorDialog { background-color: #f0f0f0; }"
       "QLabel { color: #101010; }"
@@ -82,8 +82,7 @@ QString UltaNarratorDialog::name() const
 
 QString UltaNarratorDialog::sanitizeName(const QString &name)
 {
-  // '#', '%', '&', '$' are AO packet delimiters; ';' '<' '>' '|' '\' are
-  // used by the narration field format. Remove them, trim, limit, never empty.
+  // Remove packet delimiters (# % & $) and field characters (; < > | \), trim, limit
   QString out;
   for (const QChar &c : name) {
     if (QString("#%&$;<>|\\").contains(c) || c.isNonCharacter() || c < QChar(' '))

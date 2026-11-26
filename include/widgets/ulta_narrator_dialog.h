@@ -1,7 +1,7 @@
 #ifndef ULTA_NARRATOR_DIALOG_H
 #define ULTA_NARRATOR_DIALOG_H
 
-// ULTA AO2: settings for the built-in narrator mode.
+// Settings for narrator mode
 
 #include <QDialog>
 #include <QString>
@@ -13,7 +13,7 @@ class UltaNarratorDialog : public QDialog {
   Q_OBJECT
 
 public:
-  // scene: 0 = over the user's own character, 1 = alone (characters hidden)
+  // scene: 0 = over own character, 1 = alone
   UltaNarratorDialog(int scene, const QString &folder, const QString &name,
                      QWidget *parent = nullptr);
 
@@ -21,7 +21,7 @@ public:
   QString folder() const;  // NarratorULTA / NarratorULTAMale / NarratorULTAFemale
   QString name() const;    // sanitized, never empty
 
-  // Strip characters the protocol can't carry and limit the length.
+  // Strip characters the protocol can't carry, limit the length
   static QString sanitizeName(const QString &name);
 
 private:

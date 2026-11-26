@@ -25,8 +25,7 @@ class AOApplication;
 class Lobby : public QMainWindow {
   Q_OBJECT
 public:
-  // ULTA locked build: back to the idle state after a refused server.
-  // After a refused server (not an ULTA server) the lobby stops retrying by itself.
+  // Back to idle after a refused server (no more retries by itself)
   void show_offline(bool refused = false)
   {
     last_index = -1;

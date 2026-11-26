@@ -708,10 +708,8 @@ int AOApplication::get_text_delay(QString p_char, QString p_emote)
   return f_result.toInt();
 }
 
-// ULTA: the bundled effects list (the effects pack) is read from its own
-// location. It cannot go through the normal virtual-path lookup: that returns
-// one file per path, and nearly every player's base already has a file at
-// themes/default/effects/effects.ini, which would hide the bundled list.
+// The bundled effects list is read from its own path. The virtual-path lookup returns one file per
+// path and most bases already have themes/default/effects/effects.ini
 static QString ulta_builtin_effects_ini()
 {
   const QString l_dir = get_ulta_builtin_path();
@@ -723,11 +721,8 @@ static QString ulta_builtin_effects_ini()
 
 QStringList AOApplication::get_effects(QString p_char)
 {
-  // The first list found along theme -> subtheme -> default theme is the main
-  // list (stock behavior, including legacy migration). ULTA also reads the
-  // other levels' lists, which includes the bundled effects pack, so every
-  // theme gets those effects too. Those extra lists are only used if they are
-  // already in the v2 format: files are never rewritten just to extend the list.
+  // The first list along theme, subtheme, default theme is the main list (stock). The other levels,
+  // including the bundled pack, are added too, but only in the v2 format and never rewritten
   const QString l_main_list = get_asset("effects/effects.ini", Options::getInstance().theme(), Options::getInstance().subTheme(), default_theme, "");
   QStringList l_extra_lists;
   const auto l_level_paths = get_asset_paths("effects/effects.ini", Options::getInstance().theme(), Options::getInstance().subTheme(), default_theme, "");
@@ -810,8 +805,7 @@ QStringList AOApplication::get_effects(QString p_char)
         continue;
       }
 
-      // ULTA: the same effect can now come from several levels (theme list,
-      // bundled pack); the first one wins, so the theme overrides the pack.
+      // The same effect can come from several levels, the first wins (theme over pack)
       if (l_effect_name_list.contains(l_effect_name, Qt::CaseInsensitive))
       {
         continue;
@@ -848,8 +842,7 @@ QString AOApplication::get_effect_property(QString fx_name, QString p_char,
 
   const auto paths = get_asset_paths("effects/effects.ini", Options::getInstance().theme(), Options::getInstance().subTheme(), default_theme, "");
   const auto misc_paths = get_asset_paths("effects.ini", Options::getInstance().theme(), Options::getInstance().subTheme(), default_theme, p_folder);
-  // Real files to search, in priority order. The bundled effects pack's list
-  // goes last and is read directly (see ulta_builtin_effects_ini()).
+  // Real files to search, in priority order. The bundled list goes last (see ulta_builtin_effects_ini())
   QStringList real_paths;
   for (const VPath &p : paths + misc_paths)
     real_paths.append(get_real_path(p));

@@ -339,8 +339,7 @@ QString AOApplication::get_real_path(const VPath &vpath,
   // content 1
   // base
 
-  // ULTA: content bundled with the client (e.g. the effects pack) is searched
-  // LAST, so anything in the player's own base or mounted folders wins.
+  // Bundled content is searched last, so the player's own base and mounts win
   const QString ulta_builtin = get_ulta_builtin_path();
   if (!ulta_builtin.isEmpty())
     bases.append(ulta_builtin);
@@ -365,10 +364,8 @@ QString AOApplication::get_real_path(const VPath &vpath,
     }
   }
 
-  // ULTA: the Male/Female narrator characters only ship their own char.ini and
-  // icon; every other file (sprites, animations) is shared with NarratorULTA.
-  // This only runs when the file wasn't found above, so a player's own full
-  // copy of those folders always wins.
+  // The Male/Female narrator folders only ship char.ini and the icon, the rest is shared with
+  // NarratorULTA (a full copy in the player's base wins)
   {
     const QString v = vpath.toQString();
     const QStringList narrator_aliases{"NarratorULTAMale", "NarratorULTAFemale"};

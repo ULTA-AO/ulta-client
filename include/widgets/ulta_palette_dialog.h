@@ -1,9 +1,8 @@
 #ifndef ULTA_PALETTE_DIALOG_H
 #define ULTA_PALETTE_DIALOG_H
 
-// ULTA AO2: dialog for choosing custom text colors. Each IC color slot (the
-// ones behind markup symbols like # or `) can be overridden with any color;
-// up to PRESET_COUNT "hotslots" store whole sets of overrides.
+// Dialog for custom text colors. Each color slot can be overridden,
+// PRESET_COUNT hotslots store whole sets
 
 #include <QColor>
 #include <QDialog>
@@ -33,17 +32,16 @@ public:
                     int active_preset, int other_mode,
                     QWidget *parent = nullptr);
 
-  // How other players' text is colored on this screen.
+  // How other players' text is colored here
   enum OtherColorsMode {
     OTHER_THEIRS = 0, // their custom colors (theme colors where they have none)
     OTHER_THEME = 1,  // always the theme's colors
     OTHER_MINE = 2    // the active hotslot applied to everyone's symbols
   };
 
-  // Name of the closest basic color ("Teal", "Brown", ...), for labels.
+  // Closest basic color name, for labels
   static QString nearestColorName(const QColor &c);
-  // Label for a color slot: "<symbol> <name>". Untouched slots keep their
-  // theme name; overridden slots are named after their actual color.
+  // Slot label "<symbol> <name>", the theme name if unchanged
   static QString slotLabel(const QString &symbol, const QString &theme_name,
                            const QColor *override_color);
 

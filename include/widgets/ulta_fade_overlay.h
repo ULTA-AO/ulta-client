@@ -1,9 +1,7 @@
 #ifndef ULTA_FADE_OVERLAY_H
 #define ULTA_FADE_OVERLAY_H
 
-// ULTA AO2: a colored layer laid over the viewport scene that can fade in and
-// out (blackout / whiteout). It sits above the characters and below the
-// chatbox, passes mouse clicks through, and hides itself when fully clear.
+// Colored layer over the viewport that fades in and out (blackout, whiteout)
 
 #include <QColor>
 #include <QWidget>
@@ -20,12 +18,11 @@ public:
   void setFadeColor(const QColor &color);
   QColor fadeColor() const { return m_color; }
   qreal fadeLevel() const { return m_level; }
-  // 0 = invisible, 1 = fully covered. Shows/hides the widget as needed.
+  // 0 = clear, 1 = fully covered
   void setFadeLevel(qreal level);
-  // Animate from the current level to `level` over `msecs` (replaces any fade
-  // already running).
+  // Animate to `level` over `msecs`, replaces a running fade
   void fadeTo(qreal level, int msecs);
-  // Stop any animation and clear immediately.
+  // Stop and clear at once
   void clearNow();
 
 protected:
