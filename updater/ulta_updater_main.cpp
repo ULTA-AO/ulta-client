@@ -5,7 +5,7 @@
 // It waits for the client to close, unpacks the zip into update/staging, moves
 // the files it replaces into update/backup, then moves the new files in. If
 // anything fails, the old files are put back. Finally the client is started
-// again. It never touches base/, logs/, update/ or the player's settings.
+// again.
 
 #include "miniz.h"
 
