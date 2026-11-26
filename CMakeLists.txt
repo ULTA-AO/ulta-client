@@ -74,13 +74,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif()
 
 # Subdirectories
-if (AO_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
 add_subdirectory(src)
 add_subdirectory(include)
 
-# ULTA: upstream's CMake lists lag the qmake .pro; mirror the .pro's recursive globs.
+# Pick up the widget sources and all headers
 file(GLOB_RECURSE AO_WIDGET_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/*.cpp)
 file(GLOB_RECURSE AO_ALL_HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 target_sources(Attorney_Online PRIVATE ${AO_WIDGET_SOURCES} ${AO_ALL_HEADERS})

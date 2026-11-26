@@ -13,10 +13,10 @@ The Attorney Online client for the ULTA community, based on [AO2-Client](https:/
 
 ### Building
 
-The client builds with CMake and Qt 5.15. The qmake project file and `README_BUILD.md` are from upstream and don't include the ULTA files.
+The client builds with CMake and Qt 5.15.
 
 ```bash
-cmake -S . -B build -DAO_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j8
 ```
 

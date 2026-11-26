@@ -16,10 +16,6 @@ class QResizeEvent;
 #include "networkmanager.h"
 #include "file_functions.h"
 
-#ifdef ANDROID
-#include <QtAndroidExtras/QtAndroid>
-#endif
-
 class AOApplication;
 
 class Lobby : public QMainWindow {

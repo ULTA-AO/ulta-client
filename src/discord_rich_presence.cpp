@@ -2,7 +2,7 @@
 
 namespace AttorneyOnline {
 
-#if defined(DISCORD) && !defined(ANDROID)
+#if defined(DISCORD)
 Discord::Discord()
 {
   DiscordEventHandlers handlers;

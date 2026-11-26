@@ -30,16 +30,7 @@ bool exists(QString p_path)
 QString get_base_path()
 {
   QString base_path = "";
-#ifdef ANDROID
-  QString sdcard_storage = getenv("SECONDARY_STORAGE");
-  if (dir_exists(sdcard_storage + "/base/")) {
-    base_path = sdcard_storage + "/base/";
-  }
-  else {
-    QString external_storage = getenv("EXTERNAL_STORAGE");
-    base_path = external_storage + "/base/";
-  }
-#elif defined(__APPLE__)
+#if defined(__APPLE__)
   base_path = QCoreApplication::applicationDirPath() + "/../../../base/";
 #else
   base_path = QCoreApplication::applicationDirPath() + "/base/";
@@ -50,9 +41,7 @@ QString get_base_path()
 QString get_ulta_builtin_path()
 {
   // Next to the executable (next to the .app on macOS), in "ulta/base/".
-#ifdef ANDROID
-  return QString();
-#elif defined(__APPLE__)
+#if defined(__APPLE__)
   return QCoreApplication::applicationDirPath() + "/../../../ulta/base/";
 #else
   return QCoreApplication::applicationDirPath() + "/ulta/base/";

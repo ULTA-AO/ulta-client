@@ -17,7 +17,7 @@ next to the executable.
 ## Configure and build
 
 ```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DAO_BUILD_TESTS=OFF
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j8
 ```
 
