@@ -1,6 +1,6 @@
 # ULTA AO2
 
-The Attorney Online client for the ULTA community, based on [AO2-Client](https://github.com/AttorneyOnline/AO2-Client) 2.10.1 (C++/Qt 5). It works with the [ULTA server](https://github.com/ULTA-AO/ulta-server), and the source of this client is at https://github.com/ULTA-AO/ulta-client.
+The Attorney Online client for the ULTA community, based on [AO2-Client](https://github.com/AttorneyOnline/AO2-Client) 2.10.1 (C++/Qt 5). It works with the [ULTA server](https://github.com/ULTA-AO/ulta-server).
 
 ### What's new
 
