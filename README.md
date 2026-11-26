@@ -35,3 +35,7 @@ The built-in effects and narrator content are not in this repository (see Credit
 ## License
 
 This client is based on AO2-Client, which is licensed under the GPLv3 and MIT licenses. See `LICENSE.GPLv3` and `LICENSE.MIT`.
+
+## AI (Artificial Intelligence) Disclaimer
+
+Since AI is a very convoluted topic right now in the coding hemisphere, I will attach this brief memo to be transparent. I did not rely on AI to code nor to explicitly write mass waves of data. AI was only used in one of two ways: (1) to help me learn some complex topics that my prior coding experience did not teach me, or (2) to fix extremely small (e.g. complicated handshake problems between server and client) issues that otherwise would've taken me ages to resolve on my own.
