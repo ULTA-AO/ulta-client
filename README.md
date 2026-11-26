@@ -28,7 +28,7 @@ The built-in effects and narrator content are not in this repository (see Credit
 
 * AO2-Client by the Attorney Online developers.
 * Designed to be used with a Case Cafe base install (content by jooj11 and guyfugs).
-* Effects pack: "Zutra's Vanilla Effects Pack v2 (CC Edition)" by Zutra (Discord: _threedott).
+* Effects pack: Zutra's Vanilla Effects Pack v2 (CC Edition) by Zutra (Discord: _threedott).
 * Narrator content compiled by Michael Notback (Discord: michael_notback).
 * ULTA logo and title art by Marilith Cribaum (Discord: marilithcribaum01).
 
