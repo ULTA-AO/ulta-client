@@ -1,4 +1,5 @@
 #include "aoapplication.h"
+#include <QRegularExpression>
 #include "ulta_version.h"
 #include "ulta_lock.h"
 
@@ -154,7 +155,7 @@ void AOApplication::server_packet_received(AOPacket *p_packet)
       net_manager->disconnect_from_server();
       if (lobby_constructed)
         w_lobby->show_offline(true);
-      call_notice(tr("This server doesn't support ULTA AO. You have been disconnected."));
+      lobby_notice(tr("Can't join"), tr("This server doesn't support ULTA AO."));
       goto end;
     }
     log_to_demo = false;
@@ -531,19 +532,17 @@ void AOApplication::server_packet_received(AOPacket *p_packet)
   }
   else if (header == "KK") {
     if (courtroom_constructed && !f_contents.isEmpty()) {
-      call_notice(tr("You have been kicked from the server.\nReason: %1")
-                      .arg(f_contents.at(0)));
       construct_lobby();
       destruct_courtroom();
+      lobby_notice(tr("You were kicked"), tr("Reason: %1").arg(f_contents.at(0)));
     }
     log_to_demo = false;
   }
   else if (header == "KB") {
     if (courtroom_constructed && !f_contents.isEmpty()) {
-      call_notice(tr("You have been banned from the server.\nReason: %1")
-                      .arg(f_contents.at(0)));
       construct_lobby();
       destruct_courtroom();
+      lobby_notice(tr("You are banned"), tr("Reason: %1").arg(f_contents.at(0)));
     }
     log_to_demo = false;
   }
@@ -551,8 +550,22 @@ void AOApplication::server_packet_received(AOPacket *p_packet)
     if (f_contents.isEmpty()) {
       goto end;
     }
-    call_notice(
-        tr("You are banned on this server.\nReason: %1").arg(f_contents.at(0)));
+    // Ban text is "reason, ID, Until", anything else is a plain message
+    QRegularExpressionMatch l_ban =
+        QRegularExpression("^(.*)\\r?\\nID: [^\\r\\n]*\\r?\\nUntil: (.*)$",
+                           QRegularExpression::DotMatchesEverythingOption)
+            .match(f_contents.at(0));
+    if (l_ban.hasMatch()) {
+      lobby_notice(tr("You are banned"),
+                   tr("Reason: %1\nUntil: %2").arg(l_ban.captured(1).trimmed(), l_ban.captured(2).trimmed()));
+    }
+    else if (UltaLock::enabled && lobby_constructed) {
+      const bool l_link = f_contents.at(0).contains("http");
+      lobby_notice(l_link ? tr("Update required") : tr("Can't join"), f_contents.at(0));
+    }
+    else {
+      call_notice(tr("You are banned on this server.\nReason: %1").arg(f_contents.at(0)));
+    }
     log_to_demo = false;
   }
   else if (header == "ZZ") {

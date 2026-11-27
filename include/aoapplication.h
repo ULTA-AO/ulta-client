@@ -70,6 +70,8 @@ public:
   bool courtroom_constructed = false;
 
   void construct_lobby();
+  // Locked build: shown as a card in the lobby, otherwise a popup
+  void lobby_notice(const QString &p_title, const QString &p_text);
   void destruct_lobby();
 
   void construct_courtroom();

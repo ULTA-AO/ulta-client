@@ -6,6 +6,7 @@
 #include "lobby.h"
 #include "networkmanager.h"
 #include "options.h"
+#include "ulta_lock.h"
 #include "ulta_version.h"
 
 #include "widgets/aooptionsdialog.h"
@@ -69,6 +70,14 @@ void AOApplication::construct_lobby()
       demo_server->deleteLater();
   demo_server = new DemoServer(this);
   w_lobby->show();
+}
+
+void AOApplication::lobby_notice(const QString &p_title, const QString &p_text)
+{
+  if (UltaLock::enabled && lobby_constructed)
+    w_lobby->show_notice(p_title, p_text);
+  else
+    call_notice(p_title + "\n" + p_text);
 }
 
 void AOApplication::destruct_lobby()

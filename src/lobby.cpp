@@ -1,3 +1,6 @@
+#include <QDesktopServices>
+#include <QRegularExpression>
+#include <QUrl>
 #include "lobby.h"
 
 #include "aoapplication.h"
@@ -129,6 +132,13 @@ void Lobby::build_ulta_panel()
     });
     // Say so only when the player asked: "up to date" and "could not check".
     connect(m_updater, &UltaUpdater::upToDate, this, [this] {
+      if (m_update_from_refusal) {
+        m_update_from_refusal = false;
+        m_ulta_panel->showNotice(tr("No update yet"),
+                                 tr("The server needs a newer version than the latest release. Try again later."),
+                                 tr("Try again"), 3);
+        return;
+      }
       if (m_update_manual)
         m_ulta_panel->showUpdateMessage(
             tr("You are up to date"),
@@ -136,11 +146,23 @@ void Lobby::build_ulta_panel()
       m_update_manual = false;
     });
     connect(m_updater, &UltaUpdater::checkFailed, this, [this](const QString &why) {
+      if (m_update_from_refusal) {
+        m_update_from_refusal = false;
+        m_ulta_panel->showNotice(tr("Could not check for updates"), why, tr("Try again"), 3);
+        return;
+      }
       if (m_update_manual)
         m_ulta_panel->showUpdateMessage(tr("Could not check for updates"), why, 9000);
       m_update_manual = false;
     });
-    connect(m_updater, &UltaUpdater::updateAvailable, this, [this] { m_update_manual = false; });
+    connect(m_updater, &UltaUpdater::updateAvailable, this, [this] {
+      m_update_manual = false;
+      // The player asked for the update from a refusal card: start it right away
+      if (m_update_from_refusal) {
+        m_update_from_refusal = false;
+        m_ulta_panel->beginUpdate();
+      }
+    });
     QTimer::singleShot(1500, m_updater, &UltaUpdater::check);
     // Look again every few hours while the client stays open.
     QTimer *l_update_timer = new QTimer(this);
@@ -150,19 +172,43 @@ void Lobby::build_ulta_panel()
   }
   connect(m_ulta_panel, &UltaLobbyPanel::refreshClicked, this, [this] {
     m_ulta_auto_retry = true;
+    m_notice_from_server = false;
+    m_ulta_panel->clearNotice();
     ulta_retry();
+  });
+  connect(m_ulta_panel, &UltaLobbyPanel::noticeActionClicked, this, [this](int kind) {
+    if (kind == 1 && !m_notice_url.isEmpty()) {
+      QDesktopServices::openUrl(QUrl(m_notice_url));
+    }
+    else if (kind == 3 && m_updater) {
+      m_update_from_refusal = true;
+      m_ulta_panel->showUpdateMessage(tr("Checking for updates..."), tr("One moment."), 15000);
+      m_updater->check();
+    }
+    else if (kind == 2) {
+      m_ulta_auto_retry = true;
+      m_notice_from_server = false;
+      m_ulta_panel->clearNotice();
+      ulta_retry();
+    }
   });
   // If the connection to the server is lost, or never completes, try again.
   connect(net_manager, &NetworkManager::connection_lost, this, [this] {
+    // A reason from the server stays, no retry loop
+    if (m_notice_from_server)
+      return;
     show_offline();
+    show_unreachable();
     ulta_sync_panel();
   });
   m_ulta_retry_timer = new QTimer(this);
   m_ulta_retry_timer->setInterval(7000);
   connect(m_ulta_retry_timer, &QTimer::timeout, this, [this] {
     const QString status = ui_server_player_count_lbl->text();
-    if (m_ulta_auto_retry && (status == tr("Connecting...") || status == tr("Offline")))
+    if (m_ulta_auto_retry && (status == tr("Connecting...") || status == tr("Offline"))) {
+      show_unreachable();
       ulta_retry();
+    }
   });
   m_ulta_retry_timer->start();
   connect(m_ulta_panel, &UltaLobbyPanel::optionsClicked, this,
@@ -174,6 +220,53 @@ void Lobby::build_ulta_panel()
   connect(net_manager, &NetworkManager::server_connected, this,
           [this] { ulta_sync_panel(); });
   ulta_sync_panel();
+}
+
+void Lobby::show_unreachable()
+{
+  // A reason from the server stays on screen
+  if (!m_ulta_panel || m_notice_from_server)
+    return;
+  m_ulta_panel->showNotice(tr("Can't reach the server"),
+                           tr("Check your internet connection, or try again in a few minutes."),
+                           tr("Try again"), 2);
+}
+
+void Lobby::show_notice(const QString &p_title, const QString &p_text)
+{
+  if (!m_ulta_panel)
+    return;
+  // A link in the message becomes the button
+  QRegularExpressionMatch l_match =
+      QRegularExpression("https?://[^\\s<>\"]+").match(p_text);
+  m_notice_url = l_match.hasMatch() ? l_match.captured(0) : QString();
+  // The button opens the link, so it is left out of the text
+  QString l_text = p_text;
+  if (m_notice_url.isEmpty() == false) {
+    l_text.remove(m_notice_url);
+    l_text.remove(QRegularExpression("\\s+(at|from|here|on)?:?\\s*$"));
+    l_text = l_text.trimmed() + ".";
+    l_text.replace(QRegularExpression("\\.+$"), ".");
+  }
+  l_text = l_text.trimmed();
+  if (l_text.length() > 300)
+    l_text = l_text.left(297) + "...";
+  const bool l_same = m_notice_from_server && m_ulta_panel->noticeText() == l_text;
+  m_notice_from_server = true;
+  m_ulta_auto_retry = false;
+  ui_server_player_count_lbl->setText(tr("Can't join"));
+  ui_connect_button->setEnabled(false);
+  m_ulta_state = 0;
+  ulta_sync_panel();
+  if (l_same)
+    return;
+  // With the updater on, the button updates the client; else it opens the link
+  if (m_updater && !m_notice_url.isEmpty())
+    m_ulta_panel->showNotice(p_title, l_text, tr("Update now"), 3);
+  else
+    m_ulta_panel->showNotice(p_title, l_text,
+                             m_notice_url.isEmpty() ? QString() : tr("Open download page"), 1);
+  m_ulta_panel->setStatus(tr("Can't join"), UltaLobbyPanel::Offline);
 }
 
 void Lobby::ulta_retry()
@@ -723,6 +816,9 @@ void Lobby::set_player_count(int players_online, int max_players)
           .arg(QString::number(players_online), QString::number(max_players));
   ui_server_player_count_lbl->setText(f_string);
   m_ulta_state = 2;
+  m_notice_from_server = false;
+  if (m_ulta_panel)
+    m_ulta_panel->clearNotice();
   ulta_sync_panel();
 }
 

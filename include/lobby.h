@@ -28,6 +28,8 @@ public:
     reset_selection();
     m_ulta_auto_retry = !refused;
   }
+  // Locked build: reason the player can't join, shown as a card
+  void show_notice(const QString &p_title, const QString &p_text);
   Lobby(AOApplication *p_ao_app, NetworkManager *p_net_man = nullptr);
   ~Lobby();
 
@@ -50,6 +52,10 @@ private:
   UltaUpdater *m_updater = nullptr;
   bool m_update_manual = false; // the player pressed "Updates"
   bool m_ulta_auto_retry = true;
+  bool m_notice_from_server = false;
+  bool m_update_from_refusal = false; // an update was asked for from a refusal card
+  QString m_notice_url;
+  void show_unreachable();
   QTimer *m_ulta_retry_timer = nullptr;
   void ulta_retry();
   void ulta_sync_panel();

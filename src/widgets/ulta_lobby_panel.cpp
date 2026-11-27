@@ -6,6 +6,8 @@
 #include <QPainter>
 #include <QPushButton>
 #include <QRadialGradient>
+#include <QStyle>
+#include <QVariant>
 #include <QTimer>
 
 static const char *kPanelStyle = R"(
@@ -41,6 +43,11 @@ QWidget#ulta_update_card {
   border: 1px solid rgba(224, 180, 65, 0.60);
   border-radius: 10px;
 }
+QWidget#ulta_update_card[notice="true"] {
+  background: rgba(214, 90, 90, 0.12);
+  border: 1px solid rgba(214, 90, 90, 0.65);
+}
+QWidget#ulta_update_card[notice="true"] QLabel#ulta_update_title { color: #ff9a9a; }
 QWidget#ulta_update_card QLabel { color: #e4e6eb; background: transparent; }
 QLabel#ulta_update_title { color: #e0b441; font-weight: bold; }
 QWidget#ulta_update_card QPushButton {
@@ -125,11 +132,11 @@ UltaLobbyPanel::UltaLobbyPanel(const QString &p_server_name, QWidget *parent)
   m_update_bar->setRange(0, 100);
   m_update_bar->hide();
   connect(m_update_button, &QPushButton::clicked, this, [this] {
-    m_update_button->setEnabled(false);
-    m_update_bar->setValue(0);
-    m_update_bar->show();
-    m_update_notes->setText(tr("Downloading the update..."));
-    emit updateClicked();
+    if (m_notice_mode) {
+      emit noticeActionClicked(m_notice_kind);
+      return;
+    }
+    beginUpdate();
   });
   m_update_card->hide();
 
@@ -138,6 +145,7 @@ UltaLobbyPanel::UltaLobbyPanel(const QString &p_server_name, QWidget *parent)
 
 void UltaLobbyPanel::showUpdate(const QString &p_version, const QString &p_notes, bool p_required)
 {
+  setCardRed(false);
   m_update_title->setText(p_required ? tr("Update %1 is required").arg(p_version)
                                      : tr("Update %1 is available").arg(p_version));
   setJoinLocked(p_required);
@@ -149,6 +157,16 @@ void UltaLobbyPanel::showUpdate(const QString &p_version, const QString &p_notes
   m_update_card->show();
   layoutChildren();
   update();
+}
+
+void UltaLobbyPanel::beginUpdate()
+{
+  m_update_button->setEnabled(false);
+  m_update_bar->setValue(0);
+  m_update_bar->show();
+  m_update_notes->setText(tr("Downloading the update..."));
+  layoutChildren();
+  emit updateClicked();
 }
 
 void UltaLobbyPanel::setUpdateProgress(int p_percent)
@@ -165,6 +183,7 @@ void UltaLobbyPanel::setUpdatesEnabled(bool p_enabled)
 
 void UltaLobbyPanel::showUpdateMessage(const QString &p_title, const QString &p_text, int p_hide_ms)
 {
+  setCardRed(false);
   m_update_title->setText(p_title);
   m_update_notes->setText(p_text);
   m_update_button->hide();
@@ -180,8 +199,49 @@ void UltaLobbyPanel::showUpdateMessage(const QString &p_title, const QString &p_
   });
 }
 
+void UltaLobbyPanel::setCardRed(bool p_red)
+{
+  m_notice_mode = p_red;
+  m_update_card->setProperty("notice", QString(p_red ? "true" : "false"));
+  m_update_card->style()->unpolish(m_update_card);
+  m_update_card->style()->polish(m_update_card);
+  m_update_title->style()->unpolish(m_update_title);
+  m_update_title->style()->polish(m_update_title);
+}
+
+void UltaLobbyPanel::showNotice(const QString &p_title, const QString &p_text, const QString &p_action, int p_kind)
+{
+  setCardRed(true);
+  m_notice_kind = p_kind;
+  m_update_title->setText(p_title);
+  m_update_notes->setText(p_text);
+  m_update_bar->hide();
+  m_update_button->setText(p_action);
+  m_update_button->setEnabled(true);
+  m_update_button->setVisible(!p_action.isEmpty());
+  m_update_card->show();
+  layoutChildren();
+  update();
+}
+
+QString UltaLobbyPanel::noticeText() const
+{
+  return m_notice_mode ? m_update_notes->text() : QString();
+}
+
+void UltaLobbyPanel::clearNotice()
+{
+  if (!m_notice_mode)
+    return;
+  setCardRed(false);
+  m_update_card->hide();
+  layoutChildren();
+  update();
+}
+
 void UltaLobbyPanel::showUpdateError(const QString &p_text)
 {
+  setCardRed(false);
   m_update_bar->hide();
   m_update_notes->setText(p_text);
   m_update_button->setText(tr("Try again"));
@@ -271,8 +331,9 @@ void UltaLobbyPanel::layoutChildren()
     const int cw = qMin(440, w - 40);
     m_update_card->setGeometry((w - cw) / 2, h - bottom_h - card_h, cw, card_h - 8);
     m_update_title->setGeometry(14, 8, cw - 28, 20);
-    m_update_notes->setGeometry(14, 30, cw - 28 - 110, card_h - 8 - 42);
-    m_update_button->setGeometry(cw - 14 - 96, 32, 96, 28);
+    const int bw_btn = qMax(96, m_update_button->sizeHint().width() + 8);
+    m_update_notes->setGeometry(14, 30, cw - 28 - (m_update_button->isHidden() ? 0 : bw_btn + 14), card_h - 8 - 42);
+    m_update_button->setGeometry(cw - 14 - bw_btn, 32, bw_btn, 28);
     m_update_bar->setGeometry(14, card_h - 8 - 14, cw - 28, 6);
   }
 
