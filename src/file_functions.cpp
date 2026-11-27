@@ -1,4 +1,5 @@
 #include "file_functions.h"
+#include <QDir>
 
 bool file_exists(QString file_path)
 {
@@ -34,6 +35,10 @@ QString get_base_path()
   base_path = QCoreApplication::applicationDirPath() + "/../../../base/";
 #else
   base_path = QCoreApplication::applicationDirPath() + "/base/";
+  // Installed in a subfolder of an AO folder: use the base one level up
+  if (!QDir(base_path).exists() &&
+      QDir(QCoreApplication::applicationDirPath() + "/../base/").exists())
+    base_path = QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../base") + "/";
 #endif
   return base_path;
 }
