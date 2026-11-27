@@ -1,4 +1,5 @@
 
+#include <QImageReader>
 #include "aoapplication.h"
 
 #include "courtroom.h"
@@ -31,12 +32,10 @@ int main(int argc, char *argv[])
   while (it.hasNext())
     fontDatabase.addApplicationFont(it.next());
 
-  QPluginLoader apngPlugin("qapng");
-  if (!apngPlugin.load())
+  const QList<QByteArray> image_formats = QImageReader::supportedImageFormats();
+  if (!image_formats.contains("apng"))
     qCritical() << "QApng plugin could not be loaded";
-
-  QPluginLoader webpPlugin("qwebp");
-  if (!webpPlugin.load())
+  if (!image_formats.contains("webp"))
     qCritical() << "QWebp plugin could not be loaded";
 
   QString p_language =

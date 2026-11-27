@@ -79,7 +79,7 @@ bool UltaUpdater::verifySignature(const QByteArray &manifest, const QString &sig
 QNetworkReply *UltaUpdater::get(const QUrl &url)
 {
   QNetworkRequest request(url);
-  request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+  request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
   request.setHeader(QNetworkRequest::UserAgentHeader, QString("ULTA-AO/%1").arg(ulta_client_version()));
   return m_net.get(request);
 }

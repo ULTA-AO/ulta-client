@@ -15,6 +15,8 @@ if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
+set(ULTA_VERSION "1.0.0" CACHE STRING "ULTA AO client version")
+
 # AO
 add_executable(Attorney_Online resources.qrc)
 
@@ -27,18 +29,37 @@ if(WIN32)
     endif()
 endif()
 
+# macOS app bundle
+if(APPLE)
+    set(ULTA_ICNS "${CMAKE_CURRENT_SOURCE_DIR}/resource/logo_ao2.icns")
+    target_sources(Attorney_Online PRIVATE ${ULTA_ICNS})
+    set_source_files_properties(${ULTA_ICNS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    set_target_properties(Attorney_Online PROPERTIES
+        MACOSX_BUNDLE TRUE
+        OUTPUT_NAME "ULTA AO"
+        MACOSX_BUNDLE_BUNDLE_NAME "ULTA AO"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "org.ulta.ao"
+        MACOSX_BUNDLE_ICON_FILE "logo_ao2.icns"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${ULTA_VERSION}"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${ULTA_VERSION}"
+        MACOSX_BUNDLE_INFO_STRING "ULTA AO")
+endif()
+
 # Target Include
 target_include_directories(Attorney_Online PRIVATE include)
 
 # Target Lib
-find_package(Qt5 COMPONENTS Core Gui Network Widgets Concurrent WebSockets UiTools REQUIRED)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Network Widgets Concurrent WebSockets UiTools REQUIRED)
 target_link_directories(Attorney_Online PRIVATE lib)
-target_link_libraries(Attorney_Online PRIVATE Qt5::Core Qt5::Gui Qt5::Network Qt5::Widgets Qt5::Concurrent
-    Qt5::WebSockets Qt5::UiTools bass bassmidi bassopus discord-rpc)
-target_compile_definitions(Attorney_Online PRIVATE DISCORD)
+target_link_libraries(Attorney_Online PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Network Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Concurrent
+    Qt${QT_VERSION_MAJOR}::WebSockets Qt${QT_VERSION_MAJOR}::UiTools bass bassopus)
+if(NOT APPLE)
+    target_link_libraries(Attorney_Online PRIVATE bassmidi discord-rpc)
+    target_compile_definitions(Attorney_Online PRIVATE DISCORD)
+endif()
 
-# ULTA: client version shown in the lobby and the About dialog.
-set(ULTA_VERSION "1.0.0" CACHE STRING "ULTA AO client version")
 target_compile_definitions(Attorney_Online PRIVATE ULTA_CLIENT_VERSION="${ULTA_VERSION}")
 
 # ULTA: locked-server build (see include/ulta_lock.h). Empty = open dev client.

@@ -1,3 +1,4 @@
+#include <QActionGroup>
 #include "courtroom.h"
 #include "options.h"
 #include "file_functions.h"
@@ -3188,7 +3189,7 @@ bool Courtroom::handle_objection()
             ao_app->get_chat(style_char()));
       }
       break;
-      m_chatmessage[EMOTE_MOD] = QChar(PREANIM);
+      m_chatmessage[EMOTE_MOD] = QChar(static_cast<int>(PREANIM));
     }
     ui_vp_objection->load_image(
         filename, m_chatmessage[CHAR_NAME],
