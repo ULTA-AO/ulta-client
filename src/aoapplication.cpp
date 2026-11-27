@@ -152,6 +152,10 @@ void AOApplication::call_settings_menu()
     }
     l_dialog->exec();
     delete l_dialog;
+
+    // Re-apply the courtroom style sheet in case it was lost while the dialog was open
+    if (courtroom_constructed && w_courtroom)
+      w_courtroom->set_stylesheets();
 }
 
 // Callback for when BASS device is lost

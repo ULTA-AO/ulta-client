@@ -10,6 +10,7 @@
 #include "aoevidencebutton.h"
 #include "aoevidencedisplay.h"
 #include "widgets/ulta_drag_panel.h"
+#include "widgets/ulta_find_bar.h"
 #include "widgets/ulta_fade_overlay.h"
 #include "widgets/ulta_flashback_effect.h"
 #include "widgets/ulta_flashback_panel.h"
@@ -314,6 +315,13 @@ public:
   // ULTA narrator mode. The player's settings (saved in base/ulta.ini):
   bool ulta_narrator_on = false;
   bool m_ulta_nr_placed = false; // the Nr button has a place in this layout
+  int m_nr_side = 0; // width carved off the showname box for the Nr button (0 = not carved)
+  bool m_nr_name_shrunk = false;
+  // Message text waits while a testimony or cross examination sign plays
+  bool m_wtce_busy = false;
+  bool m_wtce_resume = false;
+  QTimer *m_wtce_timer = nullptr;
+  void wtce_finished();
   int ulta_narrator_scene = 0; // 0 = over my character, 1 = alone
   QString ulta_narrator_folder = "NarratorULTA"; // supplies chat style + voice
   QString ulta_narrator_name = "Narrator";
@@ -369,6 +377,7 @@ public:
   void reset_char_fx();         // character fully visible again (start of every message)
   void start_char_fx_in();      // this message: character fades in
   void start_char_fx_out();     // text finished: character fades out
+  void position_find_bar(); // keeps the log search bar over the IC log
   void sync_narrator_panel(); // show/hide the panel and fill it from the settings
   // Send a scene tool, an IC message that plays one of the narrator's emotes (1-based)
   QString scene_fx_token(int tool) const;
@@ -819,6 +828,8 @@ private:
   SplashLayer *ui_vp_objection;
 
   QTextEdit *ui_ic_chatlog;
+  UltaFindBar *ui_find_bar;
+  QRect m_ic_log_rect; // IC log rectangle from the theme
 
   AOTextArea *ui_debug_log;
   AOTextArea *ui_server_chatlog;

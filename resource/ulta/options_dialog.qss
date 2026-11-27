@@ -1,0 +1,83 @@
+/* Dark look for the options dialog */
+QDialog { background: #2a2d35; }
+QWidget { color: #e4e6eb; }
+QLabel { background: transparent; }
+QToolTip { background: #171a21; color: #e4e6eb; border: 1px solid #6e5c2a; padding: 3px; }
+QWidget:disabled { color: #7d8391; }
+
+QTabWidget::pane { border: 1px solid #4a505d; border-radius: 6px; background: #31353e; top: -1px; }
+QTabBar::tab {
+  background: #262930; color: #9aa0ab; padding: 5px 12px; margin-right: 2px;
+  border: 1px solid #4a505d; border-bottom: none;
+  border-top-left-radius: 6px; border-top-right-radius: 6px;
+}
+QTabBar::tab:hover { color: #e4e6eb; border-color: #6e5c2a; }
+QTabBar::tab:selected { background: #31353e; color: #e0b441; border-color: #6e5c2a; }
+
+QScrollArea { background: transparent; border: 1px solid #4a505d; border-radius: 4px; }
+QScrollArea > QWidget > QWidget { background: transparent; }
+QFrame[frameShape="4"] { background: transparent; border: none; border-top: 1px solid #4a505d; max-height: 1px; }
+QFrame[frameShape="5"] { background: transparent; border: none; border-left: 1px solid #4a505d; max-width: 1px; }
+
+QPushButton {
+  background: #3a3f4a; color: #e4e6eb; border: 1px solid #6e5c2a; border-radius: 4px;
+  padding: 3px 10px;
+}
+QPushButton:hover { background: #454b58; border-color: #e0b441; }
+QPushButton:pressed { background: #50576a; }
+QPushButton:default { background: #e0b441; color: #1b1405; border-color: #ffd66e; }
+QPushButton:default:hover { background: #ebc255; }
+QPushButton:disabled { background: #2a2d35; color: #7d8391; border-color: #444a57; }
+
+QLineEdit, QPlainTextEdit, QListWidget, QSpinBox, QComboBox {
+  background: #1f2229; color: #e4e6eb; border: 1px solid #4a505d; border-radius: 4px;
+  selection-background-color: #e0b441; selection-color: #1b1405;
+}
+QLineEdit, QSpinBox { padding: 2px 5px; }
+QPlainTextEdit, QListWidget { padding: 3px; }
+QLineEdit:focus, QPlainTextEdit:focus, QListWidget:focus, QSpinBox:focus { border-color: #e0b441; }
+QListWidget::item { padding: 3px 4px; }
+QListWidget::item:selected { background: #e0b441; color: #1b1405; }
+
+QComboBox { background: #3a3f4a; padding: 2px 8px; }
+QComboBox:hover, QComboBox:focus { border-color: #e0b441; }
+QComboBox::drop-down { border: none; width: 22px; }
+QComboBox::down-arrow { image: url(:/resource/ulta/scroll-down.png); width: 10px; height: 10px; }
+QComboBox QAbstractItemView {
+  background: #2a2d35; color: #e4e6eb; border: 1px solid #6e5c2a; outline: 0;
+  selection-background-color: #e0b441; selection-color: #1b1405;
+}
+
+QSpinBox { background: #3a3f4a; padding-right: 18px; }
+QSpinBox::up-button, QSpinBox::down-button {
+  subcontrol-origin: border; width: 16px; background: #454b58; border: none;
+}
+QSpinBox::up-button { subcontrol-position: top right; border-top-right-radius: 3px; }
+QSpinBox::down-button { subcontrol-position: bottom right; border-bottom-right-radius: 3px; }
+QSpinBox::up-button:hover, QSpinBox::down-button:hover { background: #50576a; }
+QSpinBox::up-arrow { image: url(:/resource/ulta/scroll-up.png); width: 8px; height: 8px; }
+QSpinBox::down-arrow { image: url(:/resource/ulta/scroll-down.png); width: 8px; height: 8px; }
+
+QCheckBox { spacing: 8px; background: transparent; }
+QCheckBox::indicator { width: 15px; height: 15px; border: 1px solid #7a6f4e; border-radius: 3px; background: #1f2229; }
+QCheckBox::indicator:hover { border-color: #e0b441; }
+QCheckBox::indicator:checked { background: #e0b441; border-color: #e0b441; image: url(:/resource/ulta/check.png); }
+QCheckBox::indicator:disabled { background: #2a2d35; border-color: #4a505d; }
+
+QSlider::groove:horizontal { height: 4px; background: #4a505d; border-radius: 2px; }
+QSlider::sub-page:horizontal { background: #e0b441; border-radius: 2px; }
+QSlider::handle:horizontal { background: #e0b441; width: 12px; margin: -5px 0; border-radius: 6px; }
+
+QScrollBar:vertical { background: #23262e; width: 14px; margin: 14px 0 14px 0; border: none; }
+QScrollBar::handle:vertical { background: #5c6372; min-height: 28px; border-radius: 3px; margin: 0 2px; }
+QScrollBar::handle:vertical:hover, QScrollBar::handle:vertical:pressed { background: #e0b441; }
+QScrollBar::add-line:vertical { height: 14px; subcontrol-position: bottom; subcontrol-origin: margin; background: #23262e; border: none; image: url(:/resource/ulta/scroll-down.png); }
+QScrollBar::sub-line:vertical { height: 14px; subcontrol-position: top; subcontrol-origin: margin; background: #23262e; border: none; image: url(:/resource/ulta/scroll-up.png); }
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }
+QScrollBar:horizontal { background: #23262e; height: 14px; margin: 0 14px 0 14px; border: none; }
+QScrollBar::handle:horizontal { background: #5c6372; min-width: 28px; border-radius: 3px; margin: 2px 0; }
+QScrollBar::handle:horizontal:hover, QScrollBar::handle:horizontal:pressed { background: #e0b441; }
+QScrollBar::add-line:horizontal { width: 14px; subcontrol-position: right; subcontrol-origin: margin; background: #23262e; border: none; image: url(:/resource/ulta/scroll-right.png); }
+QScrollBar::sub-line:horizontal { width: 14px; subcontrol-position: left; subcontrol-origin: margin; background: #23262e; border: none; image: url(:/resource/ulta/scroll-left.png); }
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal { background: none; }
+QAbstractScrollArea::corner { background: #23262e; }

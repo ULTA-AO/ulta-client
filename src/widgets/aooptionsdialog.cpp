@@ -293,6 +293,15 @@ void AOOptionsDialog::setupUI()
   auto l_layout = new QVBoxLayout(this);
   l_layout->addWidget(ui_settings_widget);
 
+  // Dark look, at the size the dialog has without it
+  if (styleSheet().isEmpty()) {
+    const QSize l_stock_size = sizeHint();
+    QFile l_style(":/resource/ulta/options_dialog.qss");
+    if (l_style.open(QFile::ReadOnly))
+      setStyleSheet(QString::fromUtf8(l_style.readAll()));
+    resize(l_stock_size);
+  }
+
   // General dialog element.
   FROM_UI(QDialogButtonBox, settings_buttons);
 

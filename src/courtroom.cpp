@@ -3,6 +3,8 @@
 #include "file_functions.h"
 #include "ulta_version.h"
 #include "widgets/ulta_palette_dialog.h"
+#include <QShortcut>
+#include <QWheelEvent>
 #include "widgets/ulta_narrator_dialog.h"
 #include "bass.h"
 
@@ -162,6 +164,22 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
   ui_ic_chatlog = new QTextEdit(this);
   ui_ic_chatlog->setReadOnly(true);
   ui_ic_chatlog->setObjectName("ui_ic_chatlog");
+  ui_ic_chatlog->viewport()->installEventFilter(this); // no Ctrl+wheel zoom
+
+  // Ctrl+F search in the IC log
+  ui_find_bar = new UltaFindBar(ui_ic_chatlog, this);
+  QShortcut *find_shortcut = new QShortcut(QKeySequence("Ctrl+F"), this);
+  connect(find_shortcut, &QShortcut::activated, this, [this] {
+    if (!ui_char_select_background->isHidden())
+      return;
+    if (ui_find_bar->isVisible())
+      ui_find_bar->closeBar();
+    else
+      ui_find_bar->openBar();
+  });
+  connect(ui_find_bar, &UltaFindBar::opened, this, &Courtroom::position_find_bar);
+  connect(ui_find_bar, &UltaFindBar::closed, this, &Courtroom::position_find_bar);
+  connect(ui_find_bar, &UltaFindBar::closed, this, [this] { ui_ic_chat_message->setFocus(); });
 
   log_maximum_blocks = Options::getInstance().maxLogSize();
   log_goes_downwards = Options::getInstance().logDirectionDownwards();
@@ -716,6 +734,11 @@ Courtroom::Courtroom(AOApplication *p_ao_app) : QMainWindow()
   connect(text_queue_timer, &QTimer::timeout, this,
           &Courtroom::chatmessage_dequeue);
 
+  m_wtce_timer = new QTimer(this);
+  m_wtce_timer->setSingleShot(true);
+  connect(m_wtce_timer, &QTimer::timeout, this, &Courtroom::wtce_finished);
+  connect(ui_vp_wtce, &AOLayer::done, this, &Courtroom::wtce_finished);
+
   connect(sfx_delay_timer, &QTimer::timeout, this, &Courtroom::play_sfx);
 
   connect(chat_tick_timer, &QTimer::timeout, this, &Courtroom::chat_tick);
@@ -1077,9 +1100,12 @@ void Courtroom::set_widgets()
   }
 
   set_size_and_pos(ui_ic_chatlog, "ic_chatlog");
+  m_ic_log_rect = ui_ic_chatlog->geometry();
   ui_ic_chatlog->setFrameShape(QFrame::NoFrame);
   ui_ic_chatlog->setPlaceholderText(log_goes_downwards ? "▼ " + tr("Log goes down") + " ▼"
                                                        : "▲ " + tr("Log goes up") + " ▲");
+  ui_find_bar->setLogGoesDown(log_goes_downwards);
+  position_find_bar();
 
   set_size_and_pos(ui_debug_log, "ms_chatlog"); // Old name, still use it to not break compatibility
   ui_debug_log->setFrameShape(QFrame::NoFrame);
@@ -1524,6 +1550,8 @@ void Courtroom::set_widgets()
   // Narrator button (theme key `ulta_narrator_button`), else a square off the right end of the showname box
   ui_ulta_narrator->hide();
   m_ulta_nr_placed = false;
+  m_nr_side = 0;
+  m_nr_name_shrunk = false;
   if (ao_app->ulta_supported) {
     pos_size_type narrator_design = ao_app->get_element_dimensions(
         "ulta_narrator_button", "courtroom_design.ini");
@@ -1539,6 +1567,8 @@ void Courtroom::set_widgets()
       ui_ic_chat_name->resize(ui_ic_chat_name->width() - side,
                               ui_ic_chat_name->height());
       m_ulta_nr_placed = true;
+      m_nr_side = side;
+      m_nr_name_shrunk = true;
     }
 
     // Fade button (theme key `ulta_fade_button`), else floating over the lower right of the viewport
@@ -2855,6 +2885,10 @@ void Courtroom::chatmessage_enqueue(QStringList p_contents)
   // Our settings disabled queue, or no message is being parsed right now and we're not waiting on one
   bool start_queue = Options::getInstance().textStayTime() <= 0 || (text_state >= 2 && !text_queue_timer->isActive());
   // Objections also immediately play the message
+  if (is_objection) {
+    m_wtce_busy = false;
+    m_wtce_resume = false;
+  }
   if (start_queue || is_objection)
     chatmessage_dequeue(); // Process the message instantly
   // Otherwise, since a message is being parsed, chat_tick() should be called which will call dequeue
@@ -4393,6 +4427,12 @@ void Courtroom::start_chat_ticking()
   if (text_state != 0)
     return;
 
+  // The character shows right away, the text waits for the sign
+  if (m_wtce_busy) {
+    m_wtce_resume = true;
+    return;
+  }
+
   // Display the evidence
   display_evidence_image();
 
@@ -4954,6 +4994,18 @@ void Courtroom::update_ui_music_name()
     ui_music_name->setText(result);
 }
 
+void Courtroom::wtce_finished()
+{
+  if (!m_wtce_busy)
+    return;
+  m_wtce_busy = false;
+  m_wtce_timer->stop();
+  if (m_wtce_resume) {
+    m_wtce_resume = false;
+    start_chat_ticking();
+  }
+}
+
 void Courtroom::handle_wtce(QString p_wtce, int variant)
 {
   //QString sfx_file = "courtroom_sounds.ini";
@@ -5013,6 +5065,12 @@ void Courtroom::handle_wtce(QString p_wtce, int variant)
   sfx_player->play(sfx_name);
   ui_vp_wtce->load_image(filename, "", bg_misc);
   ui_vp_wtce->set_play_once(true);
+
+  // Text waits until the testimony or cross examination sign is done
+  if (p_wtce == "testimony2" || (p_wtce == "testimony1" && variant != 1)) {
+    m_wtce_busy = true;
+    m_wtce_timer->start(wtce_max_time + 400);
+  }
 }
 
 void Courtroom::set_hp_bar(int p_bar, int p_state)
@@ -6305,6 +6363,18 @@ void Courtroom::save_ulta_narrator_settings()
 void Courtroom::update_narrator_button()
 {
   ui_ulta_narrator->setVisible(m_ulta_nr_placed && ao_app->ulta_director);
+  // The showname box gives its space to Nr only while Nr is shown
+  if (m_nr_side > 0) {
+    const bool show_nr = ao_app->ulta_director;
+    if (show_nr && !m_nr_name_shrunk) {
+      ui_ic_chat_name->resize(ui_ic_chat_name->width() - m_nr_side, ui_ic_chat_name->height());
+      m_nr_name_shrunk = true;
+    }
+    else if (!show_nr && m_nr_name_shrunk) {
+      ui_ic_chat_name->resize(ui_ic_chat_name->width() + m_nr_side, ui_ic_chat_name->height());
+      m_nr_name_shrunk = false;
+    }
+  }
   ui_ulta_narrator->blockSignals(true);
   ui_ulta_narrator->setChecked(ulta_narrator_on);
   ui_ulta_narrator->blockSignals(false);
@@ -6399,6 +6469,10 @@ bool Courtroom::eventFilter(QObject *watched, QEvent *event)
   if (watched == ui_evidence &&
       (event->type() == QEvent::Show || event->type() == QEvent::Hide))
     set_evidence_button_open(event->type() == QEvent::Show);
+  // Ctrl+wheel would zoom the log text away from the theme's font size
+  if (ui_ic_chatlog && watched == ui_ic_chatlog->viewport() && event->type() == QEvent::Wheel &&
+      (static_cast<QWheelEvent *>(event)->modifiers() & Qt::ControlModifier))
+    return true;
   return QMainWindow::eventFilter(watched, event);
 }
 
@@ -7198,6 +7272,30 @@ void Courtroom::on_change_character_clicked()
 
   ui_char_select_background->show();
   sync_narrator_panel(); // ULTA: hide the narrator panel behind the select screen
+  ui_find_bar->closeBar();
+}
+
+void Courtroom::position_find_bar()
+{
+  // Open: the bar gets its own strip above the log. Closed: the log gets its rectangle back.
+  const QRect r = m_ic_log_rect;
+  if (!ui_find_bar->isVisible()) {
+    ui_ic_chatlog->setGeometry(r);
+    return;
+  }
+  const int bar_h = 30;
+  const int top = 3;
+  const int gap = 6;
+  QScrollBar *sb = ui_ic_chatlog->verticalScrollBar();
+  const bool at_bottom = sb->value() >= sb->maximum() - 2;
+  const int sb_w = sb->isVisible() ? sb->width() : 0;
+  const int bar_w = qMax(r.width() - 4 - sb_w - 8, 250);
+  ui_find_bar->setGeometry(r.x() + 4, r.y() + top, bar_w, bar_h);
+  const int used = top + bar_h + gap;
+  ui_ic_chatlog->setGeometry(r.x(), r.y() + used, r.width(), qMax(r.height() - used, 40));
+  if (at_bottom && log_goes_downwards)
+    sb->setValue(sb->maximum());
+  ui_find_bar->raise();
 }
 
 void Courtroom::on_reload_theme_clicked()

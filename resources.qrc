@@ -24,5 +24,6 @@
         <file>resource/ulta/scroll-left.png</file>
         <file>resource/ulta/scroll-right.png</file>
         <file>resource/ulta/check.png</file>
+        <file>resource/ulta/options_dialog.qss</file>
     </qresource>
 </RCC>

@@ -1,6 +1,7 @@
 #include "text_file_functions.h"
 #include "aoutils.h"
 #include "options.h"
+#include <QRegularExpression>
 
 QStringList AOApplication::get_list_file(VPath path)
 {
@@ -258,7 +259,22 @@ QString AOApplication::get_stylesheet(QString p_file)
   }
 
   design_ini.close();
-  return f_text;
+
+  // url(ulta-theme:NAME) points at an image in the active theme, or the built-in one
+  static const QRegularExpression l_token("url\\(\\s*ulta-theme:([^)\\s]+)\\s*\\)");
+  QString l_out;
+  int l_last = 0;
+  QRegularExpressionMatchIterator l_it = l_token.globalMatch(f_text);
+  while (l_it.hasNext()) {
+    QRegularExpressionMatch l_match = l_it.next();
+    l_out += f_text.mid(l_last, l_match.capturedStart() - l_last);
+    const QString l_name = l_match.captured(1);
+    const QString l_file = get_asset(l_name, Options::getInstance().theme(), Options::getInstance().subTheme(), default_theme);
+    l_out += "url(\"" + (l_file.isEmpty() ? ":/resource/ulta/" + l_name : l_file) + "\")";
+    l_last = l_match.capturedEnd();
+  }
+  l_out += f_text.mid(l_last);
+  return l_out;
 }
 
 QString AOApplication::get_tagged_stylesheet(QString target_tag, QString p_file)

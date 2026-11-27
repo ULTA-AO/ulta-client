@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
     QSettings l_ulta(get_base_path() + "ulta.ini", QSettings::IniFormat);
     l_ulta.beginGroup("theme");
     if (!l_ulta.value("default_applied", false).toBool() &&
-        QDir(get_ulta_builtin_path() + "themes/ULTADefault").exists()) {
-      Options::getInstance().setTheme("ULTADefault");
+        QDir(get_ulta_builtin_path() + "themes/ULTADefault5x3").exists()) {
+      Options::getInstance().setTheme("ULTADefault5x3");
       l_ulta.setValue("default_applied", true);
     }
     l_ulta.endGroup();
