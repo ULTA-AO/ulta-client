@@ -38,7 +38,13 @@ void AOEmoteButton::set_image(QString p_image, QString p_emote_comment)
     this->setStyleSheet(
         "QPushButton { border: none; }"
         "QToolTip { color: #000000; background-color: #ffffff; border: 0px; }");
-    this->setIcon(QPixmap(p_image).scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    // Scale to device pixels so the icon stays sharp on high-DPI screens
+    qreal dpr = devicePixelRatioF();
+    QPixmap l_icon = QPixmap(p_image).scaled(this->size() * dpr,
+                                             Qt::IgnoreAspectRatio,
+                                             Qt::SmoothTransformation);
+    l_icon.setDevicePixelRatio(dpr);
+    this->setIcon(l_icon);
     this->setIconSize(this->size());
   }
   else {

@@ -100,17 +100,18 @@ QPixmap AOLayer::get_pixmap(QImage image)
 
 void AOLayer::paintEvent(QPaintEvent *event)
 {
-  if (m_layer_opacity >= 0.999) {
+  if (m_layer_opacity <= 0.001)
+    return;
+  // Draw the pixmap directly, QLabel rescales it on every paint on high-DPI screens
+  const QPixmap pm = pixmap(Qt::ReturnByValue);
+  if (pm.isNull()) {
     QLabel::paintEvent(event);
     return;
   }
-  if (m_layer_opacity <= 0.001)
-    return;
-  const QPixmap pm = pixmap(Qt::ReturnByValue);
-  if (pm.isNull())
-    return;
+  QFrame::paintEvent(event);
   QPainter painter(this);
-  painter.setOpacity(m_layer_opacity);
+  if (m_layer_opacity < 0.999)
+    painter.setOpacity(m_layer_opacity);
   style()->drawItemPixmap(&painter, contentsRect(), alignment(), pm);
 }
 

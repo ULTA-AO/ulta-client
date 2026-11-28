@@ -1731,6 +1731,10 @@ QFont Courtroom::get_qfont(QString font_name, int f_pointsize, bool antialias)
   if (!antialias)
     style_strategy = QFont::NoAntialias;
 
+#ifdef Q_OS_MAC
+  // Points are smaller on macOS (72 dpi base)
+  f_pointsize = qRound(f_pointsize * 4.0 / 3.0);
+#endif
   font = QFont(font_name, f_pointsize);
   font.setStyleHint(QFont::SansSerif, style_strategy);
   return font;

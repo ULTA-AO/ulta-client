@@ -21,7 +21,18 @@ int main(int argc, char *argv[])
 {
   qSetMessagePattern("%{type}: %{if-category}%{category}: %{endif}%{message}");
 
+#ifdef Q_OS_MAC
+  // Draw widgets through Metal, the default raster flush is slow on Retina
+  if (qEnvironmentVariableIsEmpty("ULTA_NO_METAL")) {
+    qputenv("QT_WIDGETS_RHI", "1");
+    qputenv("QT_WIDGETS_RHI_BACKEND", "metal");
+  }
+#endif
   AOApplication main_app(argc, argv);
+#ifdef Q_OS_MAC
+  // Segoe UI is not on macOS, use the system font instead of a random fallback
+  QFont::insertSubstitution("Segoe UI", ".AppleSystemUIFont");
+#endif
 
   AOApplication::addLibraryPath(AOApplication::applicationDirPath() + "/lib");
   QResource::registerResource(main_app.get_asset("themes/" + Options::getInstance().theme() + ".rcc"));

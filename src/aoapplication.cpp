@@ -200,6 +200,10 @@ bool AOApplication::audio_device_ok() const
 void AOApplication::initBASS()
 {
   BASS_SetConfig(BASS_CONFIG_DEV_DEFAULT, 1);
+#ifdef Q_OS_MAC
+  // Keep the output running, restarting it on every sound blocks the UI
+  BASS_SetConfig(BASS_CONFIG_DEV_NONSTOP, 1);
+#endif
   BASS_Free();
   // Change the default audio output device to be the one the user has given
   // in his config.ini file for now.

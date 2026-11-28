@@ -1,6 +1,9 @@
 #include "file_functions.h"
 
 #include "aoimage.h"
+
+#include <QPainter>
+#include <QStyle>
 #include "options.h"
 
 #include <QBitmap>
@@ -57,4 +60,17 @@ bool AOImage::set_image(QString p_image, QString p_misc)
     }
   }
   return true;
+}
+
+void AOImage::paintEvent(QPaintEvent *event)
+{
+  const QPixmap pm = pixmap(Qt::ReturnByValue);
+  if (pm.isNull()) {
+    QLabel::paintEvent(event);
+    return;
+  }
+  // Draw the pixmap directly, QLabel rescales it on every paint on high-DPI screens
+  QFrame::paintEvent(event);
+  QPainter painter(this);
+  style()->drawItemPixmap(&painter, contentsRect(), alignment(), pm);
 }

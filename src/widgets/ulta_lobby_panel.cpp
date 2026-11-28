@@ -340,11 +340,11 @@ void UltaLobbyPanel::layoutChildren()
   const int by = h - 34;
   m_version->setGeometry(14, by, w / 3, 20);
   // Footer buttons, right to left (Updates only when in use)
-  const int sw = 64;
   int right = w - 14;
   for (QPushButton *b : {m_quit, m_about, m_options, m_refresh, m_check}) {
     if (b == m_check && !m_updates_enabled)
       continue;
+    const int sw = qMax(64, b->fontMetrics().horizontalAdvance(b->text()) + 28);
     right -= sw;
     b->setGeometry(right, by - 2, sw, 24);
   }

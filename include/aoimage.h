@@ -26,6 +26,9 @@ public:
 
   bool set_image(QString p_image, QString p_misc = "");
   void set_size_and_pos(QString identifier);
+
+protected:
+  void paintEvent(QPaintEvent *event) override;
 };
 
 #endif // AOIMAGE_H

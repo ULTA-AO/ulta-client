@@ -15,17 +15,21 @@ UltaFlashbackPanel::UltaFlashbackPanel(QWidget *parent)
       "QFrame#ui_flash_panel { background-color: rgba(20, 24, 40, 235); "
       "border: 1px solid #c8b878; }"
       "QLabel, QCheckBox { color: #f0f0f0; background: transparent; }"
-      "QPushButton { color: #101010; background-color: #e4e4e4; padding: 2px 6px; "
+      "QCheckBox { spacing: 8px; }"
+      "QCheckBox::indicator { width: 14px; height: 14px; border: 1px solid #c8b878; "
+      "background-color: #10131f; }"
+      "QCheckBox::indicator:checked { background-color: #c8b878; }"
+      "QPushButton { color: #101010; background-color: #e4e4e4; padding: 5px 10px; "
       "border: 1px solid #808080; }"
       "QPushButton:hover { background-color: #ffffff; }"
       "QPushButton:disabled { color: #808080; }"
-      "QComboBox { color: #101010; background-color: #ffffff; }"
+      "QComboBox { color: #101010; background-color: #ffffff; padding: 3px 6px; }"
       "QComboBox QAbstractItemView { color: #101010; background-color: #ffffff; "
       "selection-background-color: #3a6ea5; selection-color: #ffffff; }"));
 
   QGridLayout *layout = new QGridLayout(this);
-  layout->setContentsMargins(8, 6, 8, 6);
-  layout->setSpacing(4);
+  layout->setContentsMargins(14, 12, 14, 12);
+  layout->setSpacing(9);
 
   QLabel *title = new QLabel(tr("Flashback"), this);
   QFont f = title->font();
@@ -80,6 +84,7 @@ void UltaFlashbackPanel::setState(bool active, bool mine, bool held)
     m_status->setText(held ? tr("A held flashback is running.")
                            : tr("Someone else's flashback is running."));
   }
+  m_status->setVisible(!m_status->text().isEmpty());
   adjustSize();
   clampToParent();
 }
