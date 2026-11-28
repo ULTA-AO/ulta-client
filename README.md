@@ -14,6 +14,16 @@ The Attorney Online client for the ULTA community, based on [AO2-Client](https:/
 * Automatic updates on Windows and macOS.
 * A native macOS build for Apple Silicon.
 
+### Installing
+
+Download the files from the [latest release](https://github.com/ULTA-AO/ulta-client/releases/latest). On Windows take `ULTA-AO-Windows.zip`, on a Mac with Apple Silicon take `ULTA-AO-Mac.zip`. You also need a Case Cafe base install, which is not included.
+
+**Windows:** put the `ULTA` folder from the zip inside your AO folder, next to `Attorney_Online.exe`, then run `ULTA\ULTA_AO.exe`. Your content stays in the normal `base` folder. Do not create a `base` folder inside `ULTA`.
+
+**Mac:** put `ULTA AO.app` in the folder that holds your `base` folder, then open it. If macOS blocks it, allow it once under System Settings, Privacy & Security.
+
+ULTA AO updates itself after the first download.
+
 ### Building
 
 The client builds with CMake. Windows uses Qt 5.15 and macOS (Apple Silicon) uses Qt 6. See `README_BUILD.md` for the details.
@@ -34,6 +44,7 @@ The built-in effects and narrator content are not in this repository (see Credit
 * Effects pack: Zutra's Vanilla Effects Pack v2 (CC Edition) by Zutra (Discord: _threedott).
 * Narrator content compiled by Michael Notback (Discord: michael_notback).
 * ULTA logo and title art by Marilith Cribaum (Discord: marilithcribaum01).
+* Discord Rich Presence uses [discord-rpc](https://github.com/discord/discord-rpc) by Discord, Inc. (MIT).
 
 ## License
 

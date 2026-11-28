@@ -29,3 +29,9 @@ a fork of tsuserver3 by the Attorney Online developers. Licensed under the
 GNU Affero General Public License v3.
 ULTA AO is designed to be used with a Case Cafe base install, which
 players bring themselves. That content was made by jooj11 and guyfugs.
+
+Libraries
+---------
+Discord Rich Presence uses the discord-rpc library by Discord, Inc. (MIT license,
+included as ULTA-LICENSES/discord-rpc-LICENSE.txt).
+Audio uses the BASS library by Un4seen Developments, free for non-commercial use.
