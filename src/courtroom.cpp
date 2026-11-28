@@ -7364,6 +7364,8 @@ void Courtroom::on_change_character_clicked()
   set_char_select();
 
   ui_char_select_background->show();
+  // Raised widgets (buttons, clocks, effects) must not show through the select screen
+  ui_char_select_background->raise();
   sync_narrator_panel(); // ULTA: hide the narrator panel behind the select screen
   ui_find_bar->closeBar();
 }
