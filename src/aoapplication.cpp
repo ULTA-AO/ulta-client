@@ -155,6 +155,8 @@ void AOApplication::call_settings_menu()
     if (courtroom_constructed) {
         connect(l_dialog, &AOOptionsDialog::reloadThemeRequest,
                 w_courtroom, &Courtroom::on_reload_theme_clicked);
+        connect(l_dialog, &AOOptionsDialog::audioDeviceChanged, w_courtroom,
+                [this]() { w_courtroom->reload_audio_device(false); });
     }
 
     if(lobby_constructed) {

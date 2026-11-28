@@ -34,13 +34,16 @@ AOOptionsDialog::AOOptionsDialog(QDialog *parent, AOApplication *p_ao_app)
 void AOOptionsDialog::populateAudioDevices()
 {
   ui_audio_device_combobox->clear();
-  if (needsDefaultAudioDevice()) {
-    ui_audio_device_combobox->addItem("default");
-  }
+  ui_audio_device_combobox->addItem("default");
 
+  // Skip BASS's own "Default" and "No sound" entries, "default" above covers it
   BASS_DEVICEINFO info;
   for (int a = 0; BASS_GetDeviceInfo(a, &info); a++) {
-    ui_audio_device_combobox->addItem(info.name);
+    const QString name = QString::fromUtf8(info.name);
+    if (name.compare("default", Qt::CaseInsensitive) == 0 ||
+        name.compare("no sound", Qt::CaseInsensitive) == 0)
+      continue;
+    ui_audio_device_combobox->addItem(name);
   }
 }
 
@@ -210,10 +213,17 @@ void AOOptionsDialog::updateValues()
 void AOOptionsDialog::savePressed()
 {
   bool l_reload_theme_required = (ui_theme_combobox->currentText() != Options::getInstance().theme());
+  const bool l_audio_changed =
+      ui_audio_device_combobox->currentText() != Options::getInstance().audioOutputDevice();
   for (const OptionEntry &entry : qAsConst(optionEntries)) {
     entry.save();
   }
 
+  if (l_audio_changed) {
+    // The saved device replaces any pick made from the volume menu
+    ao_app->session_audio_device.clear();
+    emit audioDeviceChanged();
+  }
   if (l_reload_theme_required) {
     emit reloadThemeRequest();
   }

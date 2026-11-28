@@ -139,6 +139,7 @@ private:
 
 signals:
   void reloadThemeRequest();
+  void audioDeviceChanged();
 
 private slots:
   void savePressed();
