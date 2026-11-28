@@ -1147,6 +1147,7 @@ void Courtroom::set_widgets()
 
   // Second partner controls, only on ULTA servers
   ui_pair_slot_dropdown->hide();
+  sync_log_under_lists();
   if (ao_app->ulta_supported) {
     // "To middle" only makes sense with two partners
     if (ui_pair_order_dropdown->count() < 3)
@@ -5372,6 +5373,7 @@ void Courtroom::on_ooc_toggle_clicked()
 
     server_ooc = true;
   }
+  sync_log_under_lists();
 }
 
 // Todo: multithread this due to some servers having large as hell music list
@@ -6227,6 +6229,24 @@ void Courtroom::on_screenshake_clicked()
   ui_ic_chat_message->setFocus();
 }
 
+void Courtroom::sync_log_under_lists()
+{
+  // Hide the chat log while a list or pair control sits on top of it
+  const QList<QWidget *> covers = {ui_pair_list, ui_mute_list,
+                                   ui_pair_offset_spinbox,
+                                   ui_pair_vert_offset_spinbox,
+                                   ui_pair_order_dropdown, ui_pair_slot_dropdown};
+  bool covered = false;
+  for (QWidget *w : covers) {
+    if (!w->isHidden() &&
+        (w->geometry().intersects(ui_server_chatlog->geometry()) ||
+         w->geometry().intersects(ui_debug_log->geometry())))
+      covered = true;
+  }
+  ui_server_chatlog->setVisible(server_ooc && !covered);
+  ui_debug_log->setVisible(!server_ooc && !covered);
+}
+
 void Courtroom::on_mute_clicked()
 {
   if (ui_mute_list->isHidden()) {
@@ -6243,6 +6263,7 @@ void Courtroom::on_mute_clicked()
     ui_mute_list->hide();
     ui_mute->set_image("mute");
   }
+  sync_log_under_lists();
 }
 
 void Courtroom::on_pair_clicked()
@@ -6267,6 +6288,7 @@ void Courtroom::on_pair_clicked()
     ui_pair_slot_dropdown->hide();
     ui_pair_button->set_image("pair_button");
   }
+  sync_log_under_lists();
 }
 
 void Courtroom::on_pair_order_dropdown_changed(int p_index)

@@ -25,7 +25,14 @@ UltaPaletteDialog::UltaPaletteDialog(const QVector<UltaSlotInfo> &slot_infos,
       "QComboBox { color: #101010; background-color: #ffffff; }"
       "QComboBox QAbstractItemView { color: #101010; background-color: "
       "#ffffff; selection-background-color: #3a6ea5; selection-color: "
-      "#ffffff; }"));
+      "#ffffff; }"
+      "QPushButton { color: #101010; background-color: #e6e6e6; border: 1px "
+      "solid #a0a0a0; border-radius: 4px; padding: 4px 10px; }"
+      "QPushButton:hover { background-color: #f6f6f6; }"
+      "QPushButton:checked { background-color: #2d6fd0; color: #ffffff; "
+      "border-color: #1f56a8; }"
+      "QPushButton:disabled { color: #9a9a9a; background-color: #ececec; "
+      "border-color: #cfcfcf; }"));
 
   // Always PRESET_COUNT hotslots
   while (m_presets.size() < PRESET_COUNT)

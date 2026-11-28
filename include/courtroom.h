@@ -1116,6 +1116,7 @@ private slots:
   void on_realization_clicked();
   void on_screenshake_clicked();
 
+  void sync_log_under_lists();
   void on_mute_clicked();
   void on_pair_clicked();
   void on_pair_order_dropdown_changed(int p_index);
