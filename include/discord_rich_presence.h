@@ -21,7 +21,7 @@ class Discord {
   Q_DECLARE_TR_FUNCTIONS(Discord)
 
 private:
-  const char *APPLICATION_ID = "399779271737868288";
+  const char *APPLICATION_ID = "1576125882735534111";
   std::string server_name, server_id;
   int64_t timestamp;
 
