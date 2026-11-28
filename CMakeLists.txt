@@ -59,6 +59,13 @@ if(NOT APPLE)
     target_link_libraries(Attorney_Online PRIVATE bassmidi discord-rpc)
     target_compile_definitions(Attorney_Online PRIVATE DISCORD)
 endif()
+# Optional Discord presence on macOS, point ULTA_DISCORD_DIR at a built discord-rpc
+if(APPLE AND ULTA_DISCORD_DIR)
+    target_include_directories(Attorney_Online PRIVATE ${ULTA_DISCORD_DIR}/include)
+    target_link_libraries(Attorney_Online PRIVATE ${ULTA_DISCORD_DIR}/libdiscord-rpc.a
+        "-framework AppKit" "-framework Foundation")
+    target_compile_definitions(Attorney_Online PRIVATE DISCORD)
+endif()
 
 target_compile_definitions(Attorney_Online PRIVATE ULTA_CLIENT_VERSION="${ULTA_VERSION}")
 
