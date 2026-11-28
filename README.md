@@ -1,6 +1,6 @@
 # ULTA AO2
 
-The Attorney Online client for the ULTA community, based on [AO2-Client](https://github.com/AttorneyOnline/AO2-Client) 2.10.1 (C++/Qt 5). It works with the [ULTA server](https://github.com/ULTA-AO/tsuserverULTA).
+The Attorney Online client for the ULTA community, based on [AO2-Client](https://github.com/AttorneyOnline/AO2-Client) 2.10.1 (C++/Qt). It works with the [ULTA server](https://github.com/ULTA-AO/tsuserverULTA).
 
 ### What's new
 
@@ -10,10 +10,13 @@ The Attorney Online client for the ULTA community, based on [AO2-Client](https:/
 * Character fade in and out.
 * Flashback looks in sepia or black and white.
 * A built-in effects pack.
+* Discord Rich Presence.
+* Automatic updates on Windows and macOS.
+* A native macOS build for Apple Silicon.
 
 ### Building
 
-The client builds with CMake and Qt 5.15.
+The client builds with CMake. Windows uses Qt 5.15 and macOS (Apple Silicon) uses Qt 6. See `README_BUILD.md` for the details.
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
