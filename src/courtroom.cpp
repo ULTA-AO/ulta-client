@@ -2943,7 +2943,8 @@ void Courtroom::unpack_chatmessage(QStringList p_contents)
 
   // Sender's custom text colors for this message (empty = none)
   m_msg_palette = parse_palette(m_chatmessage[PAL_OVERRIDES],
-                                m_chatmessage[CHAR_ID].toInt() == m_cid);
+                                m_chatmessage[CHAR_ID].toInt() == m_cid,
+                                message_background_color());
   m_msg_statement = ao_app->ulta_supported &&
                     palette_marks_statement(m_chatmessage[PAL_OVERRIDES]);
 
@@ -3000,7 +3001,7 @@ void Courtroom::unpack_chatmessage(QStringList p_contents)
 void Courtroom::log_chatmessage(QString f_message, int f_char_id, QString f_showname, QString f_char, QString f_objection_mod, int f_evi_id, int f_color, LogMode f_log_mode, bool sender, QString f_palette)
 {
   // Colors for this log line come from the sender's palette (if any)
-  m_log_palette = parse_palette(f_palette, f_char_id != -1 && f_char_id == m_cid);
+  m_log_palette = parse_palette(f_palette, f_char_id != -1 && f_char_id == m_cid, log_background_color());
   m_log_statement = ao_app->ulta_supported && palette_marks_statement(f_palette);
   auto palette_guard = qScopeGuard([this]() {
     m_log_palette.clear();
@@ -6895,7 +6896,69 @@ bool Courtroom::palette_marks_statement(const QString &raw)
   return raw.split(",", Qt::SkipEmptyParts).contains("s");
 }
 
-QHash<int, QColor> Courtroom::parse_palette(const QString &raw, bool is_own) const
+static double ulta_luminance(const QColor &c)
+{
+  auto lin = [](double v) { return v <= 0.03928 ? v / 12.92 : std::pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * lin(c.redF()) + 0.7152 * lin(c.greenF()) + 0.0722 * lin(c.blueF());
+}
+
+static double ulta_contrast(const QColor &a, const QColor &b)
+{
+  double la = ulta_luminance(a), lb = ulta_luminance(b);
+  if (la < lb)
+    std::swap(la, lb);
+  return (la + 0.05) / (lb + 0.05);
+}
+
+QColor Courtroom::ulta_readable(const QColor &c, const QColor &bg) const
+{
+  const double target = 3.5;
+  if (ulta_contrast(c, bg) >= target)
+    return c;
+  // Move toward white on a dark background, toward black on a light one
+  const QColor goal = ulta_luminance(bg) < 0.4 ? QColor(255, 255, 255) : QColor(0, 0, 0);
+  for (int step = 1; step <= 20; ++step) {
+    const double t = step / 20.0;
+    QColor mixed(qRound(c.red() + (goal.red() - c.red()) * t),
+                 qRound(c.green() + (goal.green() - c.green()) * t),
+                 qRound(c.blue() + (goal.blue() - c.blue()) * t));
+    if (ulta_contrast(mixed, bg) >= target)
+      return mixed;
+  }
+  return goal;
+}
+
+QColor Courtroom::log_background_color() const
+{
+  QWidget *view = ui_ic_chatlog->viewport();
+  return view->palette().color(view->backgroundRole());
+}
+
+QColor Courtroom::message_background_color() const
+{
+  // Color of the chatbox art where the message text sits
+  const QPixmap pm = ui_vp_chatbox->pixmap(Qt::ReturnByValue);
+  if (pm.isNull())
+    return QColor();
+  const QImage img = pm.toImage();
+  const int x = qBound(0, ui_vp_message->x() - ui_vp_chatbox->x() + 12, img.width() - 1);
+  const int y = qBound(0, ui_vp_message->y() - ui_vp_chatbox->y() + 12, img.height() - 1);
+  QColor c = img.pixelColor(x, y);
+  c.setAlpha(255);
+  return c;
+}
+
+QHash<int, QColor> Courtroom::parse_palette(const QString &raw, bool is_own, const QColor &bg) const
+{
+  QHash<int, QColor> result = parse_palette_raw(raw, is_own);
+  if (ulta_fix_contrast && bg.isValid()) {
+    for (auto it = result.begin(); it != result.end(); ++it)
+      it.value() = ulta_readable(it.value(), bg);
+  }
+  return result;
+}
+
+QHash<int, QColor> Courtroom::parse_palette_raw(const QString &raw, bool is_own) const
 {
   // "slot:rrggbb,slot:rrggbb" -> slot -> color. Entries that are not understood
   // are skipped; nothing here can crash on hostile input.
@@ -6967,6 +7030,7 @@ void Courtroom::load_ulta_color_settings()
           : (settings.value("show_others", true).toBool() ? 0 : 1);
   if (ulta_other_colors_mode < 0 || ulta_other_colors_mode > 2)
     ulta_other_colors_mode = 0;
+  ulta_fix_contrast = settings.value("fix_contrast", false).toBool();
   ulta_active_preset = settings.value("active", 0).toInt();
   if (ulta_active_preset < 0 ||
       ulta_active_preset >= UltaPaletteDialog::PRESET_COUNT)
@@ -6994,6 +7058,7 @@ void Courtroom::save_ulta_color_settings()
   QSettings settings(get_base_path() + "ulta.ini", QSettings::IniFormat);
   settings.beginGroup("colors");
   settings.setValue("other_mode", ulta_other_colors_mode);
+  settings.setValue("fix_contrast", ulta_fix_contrast);
   settings.setValue("active", ulta_active_preset);
   for (int p = 0; p < ulta_presets.size(); ++p) {
     for (int slot = 0; slot < max_colors; ++slot) {
@@ -7023,7 +7088,7 @@ void Courtroom::on_ulta_colors_clicked()
   }
 
   UltaPaletteDialog dialog(slot_list, ulta_presets, ulta_active_preset,
-                           ulta_other_colors_mode, this);
+                           ulta_other_colors_mode, ulta_fix_contrast, this);
   if (dialog.exec() != QDialog::Accepted) {
     ui_ic_chat_message->setFocus();
     return;
@@ -7032,6 +7097,7 @@ void Courtroom::on_ulta_colors_clicked()
   ulta_presets = dialog.presets();
   ulta_active_preset = dialog.activePreset();
   ulta_other_colors_mode = dialog.otherMode();
+  ulta_fix_contrast = dialog.fixContrast();
   save_ulta_color_settings();
   update_text_color_icons();
   ui_ic_chat_message->setFocus();

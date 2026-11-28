@@ -12,6 +12,7 @@
 UltaPaletteDialog::UltaPaletteDialog(const QVector<UltaSlotInfo> &slot_infos,
                                      const QVector<QHash<int, QColor>> &presets,
                                      int active_preset, int other_mode,
+                                     bool fix_contrast,
                                      QWidget *parent)
     : QDialog(parent), m_slots(slot_infos), m_presets(presets),
       m_active(active_preset)
@@ -110,6 +111,14 @@ UltaPaletteDialog::UltaPaletteDialog(const QVector<UltaSlotInfo> &slot_infos,
   others_row->addWidget(m_other_mode, 1);
   root->addLayout(others_row);
 
+  m_fix_contrast = new QCheckBox(tr("Make hard-to-read colors easier to read"), this);
+  m_fix_contrast->setChecked(fix_contrast);
+  m_fix_contrast->setToolTip(
+      tr("Lightens (or darkens) a custom color that is too close to the "
+         "background of the chat panel or the IC log. Only changes how colors "
+         "look on your screen."));
+  root->addWidget(m_fix_contrast);
+
   QDialogButtonBox *buttons = new QDialogButtonBox(
       QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
   connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
@@ -122,6 +131,11 @@ UltaPaletteDialog::UltaPaletteDialog(const QVector<UltaSlotInfo> &slot_infos,
 int UltaPaletteDialog::otherMode() const
 {
   return m_other_mode->currentData().toInt();
+}
+
+bool UltaPaletteDialog::fixContrast() const
+{
+  return m_fix_contrast->isChecked();
 }
 
 QString UltaPaletteDialog::nearestColorName(const QColor &c)

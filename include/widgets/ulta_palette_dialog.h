@@ -5,6 +5,7 @@
 // PRESET_COUNT hotslots store whole sets
 
 #include <QColor>
+#include <QCheckBox>
 #include <QDialog>
 #include <QHash>
 #include <QString>
@@ -30,7 +31,7 @@ public:
   UltaPaletteDialog(const QVector<UltaSlotInfo> &slot_infos,
                     const QVector<QHash<int, QColor>> &presets,
                     int active_preset, int other_mode,
-                    QWidget *parent = nullptr);
+                    bool fix_contrast, QWidget *parent = nullptr);
 
   // How other players' text is colored here
   enum OtherColorsMode {
@@ -48,6 +49,7 @@ public:
   QVector<QHash<int, QColor>> presets() const { return m_presets; }
   int activePreset() const { return m_active; }
   int otherMode() const;
+  bool fixContrast() const;
 
 private slots:
   void onPresetClicked(int index);
@@ -66,6 +68,7 @@ private:
   QVector<QPushButton *> m_resets;
   QVector<QLabel *> m_names;
   QComboBox *m_other_mode = nullptr;
+  QCheckBox *m_fix_contrast = nullptr;
 };
 
 #endif // ULTA_PALETTE_DIALOG_H

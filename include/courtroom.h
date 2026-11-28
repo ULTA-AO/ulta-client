@@ -293,7 +293,11 @@ public:
 
   // Custom text colors. A palette maps color slot (c0..c11) to a color, a message uses its sender's palette
   // is_own: the "other players' colors" opt-out must not hide the player's own colors
-  QHash<int, QColor> parse_palette(const QString &raw, bool is_own = false) const;
+  QHash<int, QColor> parse_palette(const QString &raw, bool is_own = false, const QColor &bg = QColor()) const;
+  QHash<int, QColor> parse_palette_raw(const QString &raw, bool is_own) const;
+  QColor ulta_readable(const QColor &c, const QColor &bg) const;
+  QColor log_background_color() const;
+  QColor message_background_color() const;
   QString ulta_palette_string() const;
   void load_ulta_color_settings();
   void save_ulta_color_settings();
@@ -311,6 +315,7 @@ public:
   int ulta_active_preset = 0;
   // How other players' text is colored: 0 their colors, 1 theme colors, 2 active hotslot
   int ulta_other_colors_mode = 0;
+  bool ulta_fix_contrast = false;
 
   // ULTA narrator mode. The player's settings (saved in base/ulta.ini):
   bool ulta_narrator_on = false;
