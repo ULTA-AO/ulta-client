@@ -3706,6 +3706,49 @@ void Courtroom::play_char_sfx(QString sfx_name)
   sfx_player->play(sfx_name);
 }
 
+bool Courtroom::fit_showname_to_plate()
+{
+  // The plate is the part of the chat art above the message panel. Find its
+  // left and right edge from the opaque pixels and fit the name area into it.
+  const QPixmap pm = ui_vp_chatbox->pixmap(Qt::ReturnByValue);
+  if (pm.isNull())
+    return false;
+  const QImage img = pm.toImage();
+  const int w = img.width();
+  const int h = img.height();
+  if (w < 60 || h < 30)
+    return false;
+  auto opaque = [&](int x, int y) { return qAlpha(img.pixel(x, y)) > 40; };
+  int body_top = -1;
+  for (int y = 0; y < h / 2; ++y) {
+    int count = 0;
+    for (int x = 0; x < w; ++x)
+      count += opaque(x, y) ? 1 : 0;
+    if (count >= w * 85 / 100) {
+      body_top = y;
+      break;
+    }
+  }
+  if (body_top < 4)
+    return false; // no plate above the panel
+  int left = w;
+  int right = -1;
+  for (int y = 0; y < body_top; ++y) {
+    for (int x = 0; x < w; ++x) {
+      if (opaque(x, y)) {
+        left = qMin(left, x);
+        right = qMax(right, x);
+      }
+    }
+  }
+  if (right - left < 30)
+    return false;
+  const int pad = 4;
+  ui_vp_showname->setGeometry(left + pad, ui_vp_showname->y(),
+                              right - left + 1 - pad * 2, ui_vp_showname->height());
+  return true;
+}
+
 void Courtroom::initialize_chatbox()
 {
 
@@ -3782,28 +3825,41 @@ void Courtroom::initialize_chatbox()
 #else
     int fm_width = fm.boundingRect((ui_vp_showname->text())).width();
 #endif
+    // Fit the name area to the plate of this chat style's art, whatever its size
+    const bool fitted = fit_showname_to_plate();
     if (extra_width > 0) {
       QString current_path = ui_vp_chatbox->path.left(ui_vp_chatbox->path.lastIndexOf('.'));
-      if (fm_width > default_width.width &&
+      const int base_width = fitted ? ui_vp_showname->width() : default_width.width;
+      if (fm_width > base_width &&
           ui_vp_chatbox->set_image(current_path +
               "med")) // This text be big. Let's do some shenanigans.
       {
-        ui_vp_showname->resize(default_width.width + extra_width,
-                               ui_vp_showname->height());
+        if (!fit_showname_to_plate())
+          ui_vp_showname->resize(default_width.width + extra_width,
+                                 ui_vp_showname->height());
         if (fm_width > ui_vp_showname->width() &&
             ui_vp_chatbox->set_image(current_path + "big")) // Biggest possible size for us.
         {
-          ui_vp_showname->resize(
-              static_cast<int>(default_width.width + (extra_width * 2)),
-              ui_vp_showname->height());
+          if (!fit_showname_to_plate())
+            ui_vp_showname->resize(
+                static_cast<int>(default_width.width + (extra_width * 2)),
+                ui_vp_showname->height());
         }
       }
-      else
+      else if (!fitted)
         ui_vp_showname->resize(default_width.width, ui_vp_showname->height());
     }
-    else {
+    else if (!fitted) {
       ui_vp_showname->resize(default_width.width, ui_vp_showname->height());
     }
+
+    // A name that still does not fit gets a smaller font instead of being cut off
+    QFont l_name_font = ui_vp_showname->font();
+    const int l_avail = ui_vp_showname->width() - 6;
+    while (l_avail > 0 && l_name_font.pointSizeF() > 7.0 &&
+           QFontMetrics(l_name_font).horizontalAdvance(ui_vp_showname->text()) > l_avail)
+      l_name_font.setPointSizeF(l_name_font.pointSizeF() - 0.5);
+    ui_vp_showname->setFont(l_name_font);
   }
 
   // This should probably be called only if any change from the last chat
