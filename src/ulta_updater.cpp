@@ -31,6 +31,37 @@ static const char *kUpdateUrl = ULTA_UPDATE_URL;
 static const char *kUpdateUrl = "";
 #endif
 
+#ifdef Q_OS_MACOS
+// Runs after the client quits: swaps in the new app, puts the old one back on any failure
+static const char kMacUpdateScript[] = R"SH(#!/bin/sh
+zip="$1"; app="$2"; pid="$3"
+dir=$(dirname "$app"); name=$(basename "$app")
+log=/tmp/ulta-update.log
+echo "update $(date)" > "$log"
+work=$(mktemp -d "$dir/.ulta-update.XXXXXX") || { open "$app"; exit 1; }
+fail() {
+  echo "failed: $1" >> "$log"
+  [ -d "$work/old.app" ] && [ ! -d "$app" ] && mv "$work/old.app" "$app"
+  rm -rf "$work"
+  open "$app"
+  exit 1
+}
+i=0
+while kill -0 "$pid" 2>/dev/null && [ $i -lt 120 ]; do sleep 0.5; i=$((i+1)); done
+/usr/bin/ditto -x -k "$zip" "$work" >> "$log" 2>&1 || fail "could not unpack the update"
+new="$work/$name"
+[ -d "$new" ] || fail "the update does not contain $name"
+/usr/bin/xattr -dr com.apple.quarantine "$new" 2>/dev/null
+/usr/bin/codesign --verify --deep "$new" >> "$log" 2>&1 || fail "the new app signature is not valid"
+mv "$app" "$work/old.app" || fail "could not move the old app away"
+mv "$new" "$app" || fail "could not put the new app in place"
+rm -f "$zip"
+rm -rf "$work"
+echo "updated" >> "$log"
+open "$app"
+)SH";
+#endif
+
 UltaUpdater::UltaUpdater(QObject *parent) : QObject(parent) {}
 
 bool UltaUpdater::enabled()
@@ -136,9 +167,18 @@ void UltaUpdater::manifest_part_done()
   }
   const QJsonObject json = QJsonDocument::fromJson(m_manifest).object();
   m_version = json.value("version").toString();
-  m_url = json.value("url").toString();
-  m_sha256 = json.value("sha256").toString().toLower();
-  m_size = static_cast<qint64>(json.value("size").toDouble());
+  // Windows uses the top-level fields, macOS has its own entry
+  QJsonObject asset = json;
+#ifdef Q_OS_MACOS
+  asset = json.value("macos").toObject();
+  if (asset.isEmpty()) {
+    emit upToDate();
+    return;
+  }
+#endif
+  m_url = asset.value("url").toString();
+  m_sha256 = asset.value("sha256").toString().toLower();
+  m_size = static_cast<qint64>(asset.value("size").toDouble());
   m_notes = json.value("notes").toString();
   m_required = json.value("required").toBool(false);
   if (m_version.isEmpty() || m_url.isEmpty() || m_sha256.size() != 64 || m_size <= 0) {
@@ -165,7 +205,7 @@ void UltaUpdater::fail_install(const QString &why)
 
 void UltaUpdater::install()
 {
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) && !defined(Q_OS_MACOS)
   fail_install("automatic updates are not available on this system yet");
   return;
 #else
@@ -178,7 +218,21 @@ void UltaUpdater::install()
     return;
   }
 #endif
+#ifdef Q_OS_MACOS
+  // The app folder must be writable, and a quarantined app runs from a read-only copy
+  const QString bundle = QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../..");
+  if (bundle.contains("/AppTranslocation/")) {
+    fail_install("move ULTA AO to your Applications folder, then open it again");
+    return;
+  }
+  if (!QFileInfo(QFileInfo(bundle).absolutePath()).isWritable()) {
+    fail_install("the folder holding ULTA AO is not writable, move the app to your Applications folder");
+    return;
+  }
+  const QString folder = QDir::temp().filePath("ulta-update");
+#else
   const QString folder = QCoreApplication::applicationDirPath() + "/update";
+#endif
   if (!QDir().mkpath(folder)) {
     fail_install("the install folder is not writable");
     return;
@@ -264,6 +318,26 @@ void UltaUpdater::hand_over()
     arguments->flags |= 0x08000000; // CREATE_NO_WINDOW
   });
   if (!process.startDetached()) {
+    fail_install("could not start the updater");
+    return;
+  }
+  emit restarting();
+#endif
+#ifdef Q_OS_MACOS
+  const QString bundle = QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../..");
+  const QString script_path = QDir::temp().filePath(
+      QString("ulta-update-%1.sh").arg(QCoreApplication::applicationPid()));
+  QFile script(script_path);
+  if (!script.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+    fail_install("could not start the updater");
+    return;
+  }
+  script.write(kMacUpdateScript);
+  script.close();
+  QFile::setPermissions(script_path, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
+  const QStringList args = {script_path, m_zip_path, bundle,
+                            QString::number(QCoreApplication::applicationPid())};
+  if (!QProcess::startDetached("/bin/sh", args)) {
     fail_install("could not start the updater");
     return;
   }

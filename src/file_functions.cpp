@@ -47,6 +47,10 @@ QString get_ulta_builtin_path()
 {
   // Next to the executable (next to the .app on macOS), in "ulta/base/".
 #if defined(__APPLE__)
+  // Inside the app bundle, so an update only replaces the .app
+  const QString inside = QCoreApplication::applicationDirPath() + "/../Resources/ulta/base/";
+  if (QDir(inside).exists())
+    return inside;
   return QCoreApplication::applicationDirPath() + "/../../../ulta/base/";
 #else
   return QCoreApplication::applicationDirPath() + "/ulta/base/";
