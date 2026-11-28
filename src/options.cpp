@@ -37,10 +37,21 @@ void Options::migrateCallwords()
   setCallwords(l_callwords);
 }
 
+// ULTA AO keeps its own settings files so it does not share them with a stock
+// client in the same base folder. The first run starts from the existing file.
+static QString own_settings_file(const QString &own_name, const QString &stock_name)
+{
+  const QString own = get_base_path() + own_name;
+  const QString stock = get_base_path() + stock_name;
+  if (!QFile::exists(own) && QFile::exists(stock))
+    QFile::copy(stock, own);
+  return own;
+}
+
 Options::Options()
-    : config(get_base_path() + "config.ini", QSettings::IniFormat, nullptr),
-      favorite(get_base_path() + "favorite_servers.ini", QSettings::IniFormat,
-               nullptr)
+    : config(own_settings_file("ulta_config.ini", "config.ini"), QSettings::IniFormat, nullptr),
+      favorite(own_settings_file("ulta_favorite_servers.ini", "favorite_servers.ini"),
+               QSettings::IniFormat, nullptr)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   config.setIniCodec("UTF-8");
