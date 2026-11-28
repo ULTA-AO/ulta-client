@@ -22,7 +22,7 @@ Download the files from the [latest release](https://github.com/ULTA-AO/ulta-cli
 
 **Mac:** put `ULTA AO.app` in the folder that holds your `base` folder, then open it. If macOS blocks it, allow it once under System Settings, Privacy & Security.
 
-ULTA AO updates itself after the first download.
+ULTA AO keeps its own settings in `base/ulta_config.ini`, so it doesn't change the settings of another AO client sharing the same `base` folder. It updates itself after the first download.
 
 ### Building
 
