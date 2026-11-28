@@ -53,6 +53,10 @@ public:
   void setOocName(QString value);
 
   // Returns the blip rate from config.ini (once per X symbols)
+  // Window scale in percent (50 to 200), applied at the next start
+  int uiScale() const;
+  void setUiScale(int value);
+
   int blipRate() const;
   void setBlipRate(int value);
 

@@ -17,6 +17,8 @@
 #include <QPushButton>
 #include <QResource>
 #include <QSpinBox>
+#include <QMessageBox>
+#include <QFormLayout>
 #include <QUiLoader>
 #include <QVBoxLayout>
 
@@ -213,6 +215,7 @@ void AOOptionsDialog::updateValues()
 void AOOptionsDialog::savePressed()
 {
   bool l_reload_theme_required = (ui_theme_combobox->currentText() != Options::getInstance().theme());
+  const int l_old_scale = Options::getInstance().uiScale();
   const bool l_audio_changed =
       ui_audio_device_combobox->currentText() != Options::getInstance().audioOutputDevice();
   for (const OptionEntry &entry : qAsConst(optionEntries)) {
@@ -223,6 +226,10 @@ void AOOptionsDialog::savePressed()
     // The saved device replaces any pick made from the volume menu
     ao_app->session_audio_device.clear();
     emit audioDeviceChanged();
+  }
+  if (Options::getInstance().uiScale() != l_old_scale) {
+    QMessageBox::information(this, tr("UI scale"),
+                             tr("Restart ULTA AO to apply the new UI scale."));
   }
   if (l_reload_theme_required) {
     emit reloadThemeRequest();
@@ -338,6 +345,19 @@ void AOOptionsDialog::setupUI()
   FROM_UI(QPushButton, theme_reload_button)
   connect(ui_theme_reload_button, &QPushButton::clicked, this,
           &::AOOptionsDialog::onReloadThemeClicked);
+
+  // Window scale, applied at the next start
+  if (auto *l_form = findChild<QFormLayout *>("formLayout")) {
+    auto *l_scale = new QSpinBox(this);
+    l_scale->setObjectName("ui_scale_spinbox");
+    l_scale->setRange(50, 200);
+    l_scale->setSingleStep(5);
+    l_scale->setSuffix(" %");
+    l_scale->setToolTip(tr("Makes the whole window larger or smaller. Restart the client to apply it. "
+                           "If the window looks wrong afterwards, start the client with --scale 100."));
+    l_form->addRow(tr("UI scale (restart to apply)"), l_scale);
+    registerOption<QSpinBox, int>("ui_scale_spinbox", &Options::uiScale, &Options::setUiScale);
+  }
 
   FROM_UI(QPushButton, theme_folder_button)
   connect(ui_theme_folder_button, &QPushButton::clicked, this, [=] {

@@ -98,6 +98,16 @@ QString Options::theme() const
 
 void Options::setTheme(QString value) { config.setValue("theme", value); }
 
+int Options::uiScale() const
+{
+  return qBound(50, config.value("ui_scale", 100).toInt(), 200);
+}
+
+void Options::setUiScale(int value)
+{
+  config.setValue("ui_scale", qBound(50, value, 200));
+}
+
 int Options::blipRate() const { return config.value("blip_rate", 2).toInt(); }
 
 void Options::setBlipRate(int value) { config.setValue("blip_rate", value); }

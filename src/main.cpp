@@ -1,6 +1,10 @@
 
 #include <QImageReader>
 #include "aoapplication.h"
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+#include <QFileInfo>
 
 #include "courtroom.h"
 #include "datatypes.h"
@@ -17,10 +21,48 @@
 #include <QTranslator>
 #include <QResource>
 
+// UI scale has to be known before the application object exists, so it is read
+// straight from the settings file (and a --scale N argument can reset it)
+static int early_ui_scale(int argc, char *argv[])
+{
+  QString exe_dir;
+#ifdef Q_OS_WIN
+  wchar_t l_path[MAX_PATH];
+  const DWORD l_len = GetModuleFileNameW(nullptr, l_path, MAX_PATH);
+  exe_dir = QFileInfo(QString::fromWCharArray(l_path, static_cast<int>(l_len))).absolutePath();
+#else
+  exe_dir = QFileInfo(QString::fromLocal8Bit(argv[0])).absolutePath();
+#endif
+#if defined(__APPLE__)
+  QString base = exe_dir + "/../../../base/";
+#else
+  QString base = exe_dir + "/base/";
+  if (!QDir(base).exists() && QDir(exe_dir + "/../base/").exists())
+    base = QDir::cleanPath(exe_dir + "/../base") + "/";
+#endif
+  QSettings settings(base + "ulta_config.ini", QSettings::IniFormat);
+  int percent = settings.value("ui_scale", 100).toInt();
+  for (int i = 1; i + 1 < argc; ++i) {
+    if (QString(argv[i]) == "--scale") {
+      percent = QString(argv[i + 1]).toInt();
+      settings.setValue("ui_scale", qBound(50, percent, 200));
+      settings.sync();
+    }
+  }
+  return qBound(50, percent, 200);
+}
+
 int main(int argc, char *argv[])
 {
   qSetMessagePattern("%{type}: %{if-category}%{category}: %{endif}%{message}");
 
+  const int l_ui_scale = early_ui_scale(argc, argv);
+  if (l_ui_scale != 100) {
+    qputenv("QT_SCALE_FACTOR", QByteArray::number(l_ui_scale / 100.0, 'f', 2));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+  }
 #ifdef Q_OS_MAC
   // Draw widgets through Metal, the default raster flush is slow on Retina
   if (qEnvironmentVariableIsEmpty("ULTA_NO_METAL")) {
