@@ -1119,7 +1119,9 @@ void Courtroom::set_widgets()
 
   set_size_and_pos(ui_pair_list, "pair_list");
   ui_pair_list->hide();
-  ui_pair_list->setToolTip(tr("Select a character you wish to pair with."));
+  ui_pair_list->setToolTip(
+      tr("Select a character you wish to pair with. Pairing works when you both "
+         "choose each other and stand in the same position."));
 
   set_size_and_pos(ui_pair_offset_spinbox, "pair_offset_spinbox");
   ui_pair_offset_spinbox->hide();
@@ -1138,7 +1140,9 @@ void Courtroom::set_widgets()
   ui_pair_order_dropdown->hide();
   set_size_and_pos(ui_pair_order_dropdown, "pair_order_dropdown");
   ui_pair_order_dropdown->setToolTip(
-      tr("Change the order of appearance for your character."));
+      tr("Where YOUR character stands when you speak: in front of your partners, "
+         "behind them, or between two partners. Each player's setting applies to "
+         "their own messages."));
 
   set_size_and_pos(ui_pair_button, "pair_button");
   ui_pair_button->set_image("pair_button");
@@ -2669,6 +2673,10 @@ void Courtroom::on_chat_return_pressed()
                                    // support pair reordering
         packet += "^" + QString::number(pair_order);
       packet_contents.append(packet);
+    }
+    else if (ao_app->ulta_supported && ao_app->effects_supported) {
+      // No first partner, the order still counts when only the second one is used
+      packet_contents.append("-1^" + QString::number(pair_order));
     }
     else {
       packet_contents.append("-1");
