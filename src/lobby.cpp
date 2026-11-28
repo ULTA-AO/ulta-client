@@ -15,6 +15,11 @@
 #include "widgets/ulta_lobby_panel.h"
 
 #include <QCoreApplication>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QScreen>
+#include <QTextBrowser>
+#include <QVBoxLayout>
 #include <QEvent>
 #include <QImageReader>
 #include <QLabel>
@@ -555,7 +560,8 @@ void Lobby::on_about_clicked()
          "compiled by Michael Notback (Discord: michael_notback).<br>"
          "Server based on tsuserverCC by RealKaiser and the Case Cafe staff. "
          "Designed to be used with a Case Cafe base install (content by "
-         "jooj11 and guyfugs)."
+         "jooj11 and guyfugs).<br>"
+         "Discord status uses discord-rpc by Discord, Inc. (MIT)."
          "<h3>General Credits</h3>"
          "<b>Major development:</b><br>"
          "OmniTroid, stonedDiscord, longbyte1, gameboyprinter, Cerapter, "
@@ -591,7 +597,24 @@ void Lobby::on_about_clicked()
           .arg(ulta_client_version())
           .arg(QLatin1String(QT_VERSION_STR))
           .arg(ao_app->get_version_string());
-  QMessageBox::about(this, tr("About"), msg);
+  // Scrollable and limited to the screen height, the credits list is long
+  QDialog about_dialog(this);
+  about_dialog.setWindowTitle(tr("About"));
+  QVBoxLayout *about_layout = new QVBoxLayout(&about_dialog);
+  QTextBrowser *about_text = new QTextBrowser(&about_dialog);
+  about_text->setOpenExternalLinks(true);
+  about_text->setFrameShape(QFrame::NoFrame);
+  about_text->setHtml(msg);
+  about_layout->addWidget(about_text);
+  QDialogButtonBox *about_buttons =
+      new QDialogButtonBox(QDialogButtonBox::Ok, &about_dialog);
+  connect(about_buttons, &QDialogButtonBox::accepted, &about_dialog,
+          &QDialog::accept);
+  about_layout->addWidget(about_buttons);
+  const QScreen *about_screen = screen();
+  const int about_max = about_screen ? about_screen->availableGeometry().height() * 8 / 10 : 600;
+  about_dialog.resize(600, qMin(760, about_max));
+  about_dialog.exec();
 }
 
 // clicked on an item in the serverlist
