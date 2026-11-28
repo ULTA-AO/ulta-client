@@ -34,4 +34,6 @@ Libraries
 ---------
 Discord Rich Presence uses the discord-rpc library by Discord, Inc. (MIT license,
 included as ULTA-LICENSES/discord-rpc-LICENSE.txt).
+Secure connections on Windows use OpenSSL 1.1.1 (OpenSSL license, included as
+ULTA-LICENSES/openssl-LICENSE.txt).
 Audio uses the BASS library by Un4seen Developments, free for non-commercial use.
